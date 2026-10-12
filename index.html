@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="たきび" />
+<meta name="theme-color" content="#07070d" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23241626'/%3E%3Cstop offset='1' stop-color='%234a1a0c'/%3E%3C/linearGradient%3E%3ClinearGradient id='f' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%23FF4A1C'/%3E%3Cstop offset='1' stop-color='%23FFC24A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='34' font-family='sans-serif' font-size='40' font-weight='bold' fill='url(%23f)' text-anchor='middle' dominant-baseline='central'%3E%E7%81%AB%3C/text%3E%3C/svg%3E" />
+<title>たきび</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07070d;
+    --ink: #f4ece4;
+    --secondary: rgba(244,236,228,0.6);
+    --tertiary: rgba(244,236,228,0.32);
+    --sep: rgba(255,255,255,0.1);
+    --ember: #FF8A3D;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+    color: var(--ink); font-size: 16px; -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none; -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
+  #app { position: fixed; inset: 0; height: var(--app-height, 100%); }
+  #fire { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .top {
+    position: absolute; left: 0; right: 0; top: 0;
+    padding: calc(var(--safe-top) + 8px) 14px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none; z-index: 5;
+  }
+  .round-btn {
+    pointer-events: auto;
+    width: 40px; height: 40px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.07); color: var(--secondary);
+    border: 0.5px solid rgba(255,255,255,0.08); cursor: pointer;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    transition: opacity .2s, transform .15s;
+  }
+  .round-btn:active { transform: scale(0.92); }
+
+  #hint {
+    position: absolute; left: 0; right: 0; top: 34%;
+    text-align: center; font-size: 15px; letter-spacing: 0.12em;
+    color: var(--secondary); pointer-events: none; z-index: 4;
+    animation: breathe 3.2s ease-in-out infinite;
+    transition: opacity .8s;
+  }
+  #hint.hide { opacity: 0; animation: none; }
+  @keyframes breathe { 0%,100% { opacity: .35 } 50% { opacity: .9 } }
+
+  .bottom {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 0 20px calc(var(--safe-bottom) + 22px);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    z-index: 5; pointer-events: none; transition: opacity .8s;
+  }
+  .bottom.hide { opacity: 0; }
+  .bottom.hide #logBtn { pointer-events: none; }
+  #status { font-size: 13px; color: var(--tertiary); letter-spacing: 0.06em; min-height: 18px; }
+  #logBtn {
+    pointer-events: auto;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    min-width: 200px; height: 54px; padding: 0 28px; border-radius: 27px;
+    font-family: inherit; font-size: 16px; font-weight: 600; letter-spacing: 0.08em;
+    color: #2a1306; border: 0; cursor: pointer;
+    background: linear-gradient(180deg, #FFC27A 0%, #FF8A3D 100%);
+    box-shadow: 0 8px 30px rgba(255,120,40,0.35), inset 0 1px 0 rgba(255,255,255,0.45);
+    transition: transform .12s, filter .2s, box-shadow .2s;
+  }
+  #logBtn:active { transform: scale(0.96); }
+  #logBtn.full { filter: saturate(0.4) brightness(0.75); box-shadow: none; }
+
+  /* 触らないとUIが消える */
+  .top, .bottom { transition: opacity 1.8s ease; }
+  body.idle .top, body.idle .bottom { opacity: 0; }
+  body.idle .round-btn, body.idle #logBtn { pointer-events: none; }
+  body.night .round-btn { color: var(--tertiary); }
+  body.night #logBtn:not(.full) { filter: brightness(0.82) saturate(0.85); }
+  .right { display: flex; gap: 10px; }
+  .round-btn.pill { width: auto; min-width: 40px; padding: 0 12px; gap: 6px; font-family: inherit; font-size: 13px; font-weight: 600; }
+  .round-btn.on { color: #FFC27A; background: rgba(255,170,90,0.12); }
+
+  #goodnight {
+    position: absolute; left: 0; right: 0; top: 40%; text-align: center;
+    font-size: 17px; letter-spacing: 0.3em; color: rgba(244,236,228,0.55);
+    opacity: 0; transition: opacity 3s ease; pointer-events: none; z-index: 6;
+  }
+  #goodnight.show { opacity: 1; }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .choice {
+    height: 64px; border-radius: 14px; border: 0; cursor: pointer;
+    background: rgba(255,255,255,0.07); color: var(--ink);
+    font-family: inherit; font-size: 20px; font-weight: 700;
+  }
+  .choice small { font-size: 12px; font-weight: 500; color: var(--secondary); margin-left: 2px; }
+  .choice:active { background: rgba(255,170,90,0.2); }
+  .sheet-desc { font-size: 13px; color: var(--secondary); text-align: center; line-height: 1.7; margin: -8px 0 18px; }
+  .stop-btn {
+    display: block; width: 100%; margin-top: 10px; height: 48px; border-radius: 14px; border: 0;
+    background: rgba(255,255,255,0.07); color: #FF8A7A; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+
+  /* 昔話の字幕 */
+  #caption {
+    position: absolute; left: 24px; right: 24px;
+    bottom: calc(var(--safe-bottom) + 132px);
+    text-align: center; pointer-events: none; z-index: 6;
+    opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease;
+  }
+  #caption.show { opacity: 1; transform: translateY(0); }
+  #caption .who { font-size: 12px; color: #FFB27A; letter-spacing: 0.2em; margin-bottom: 6px; opacity: .8; }
+  #caption .line {
+    font-size: 17px; line-height: 1.8; color: rgba(250,240,228,0.92); letter-spacing: 0.04em;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8);
+    transition: opacity .5s; min-height: 31px;
+  }
+  #caption .line.fade { opacity: 0; }
+  body.night #caption .line { color: rgba(240,226,210,0.8); }
+
+  .btn-row { display: flex; gap: 12px; align-items: center; }
+  #storyBtn {
+    pointer-events: auto; width: 54px; height: 54px; border-radius: 27px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    background: rgba(255,255,255,0.08); color: #FFC27A; border: 0.5px solid rgba(255,194,122,0.25);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: transform .12s;
+  }
+  #storyBtn:active { transform: scale(0.94); }
+  #storyBtn.hidden { display: none; }
+  body.idle #storyBtn { pointer-events: none; }
+
+  .people { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .person {
+    border: 1.5px solid transparent; border-radius: 14px; padding: 10px 4px 10px; cursor: pointer;
+    background: rgba(255,255,255,0.06); color: rgba(244,236,228,0.35); font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all .2s;
+  }
+  .person svg { width: 58px; height: 58px; display: block; }
+  .person span { font-size: 13px; font-weight: 600; color: var(--secondary); }
+  .person.on { border-color: rgba(255,170,90,0.7); background: rgba(255,140,60,0.12); color: #FFB27A; }
+  .person.on span { color: var(--ink); }
+  .primary-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; margin-top: 14px;
+    border-radius: 14px; border: 0; cursor: pointer; font-family: inherit; font-size: 15px; font-weight: 600; color: #2a1306;
+    background: linear-gradient(180deg, #FFC27A 0%, #FF8A3D 100%);
+  }
+  .primary-btn:disabled { filter: saturate(0.3) brightness(0.6); }
+  .left { display: flex; gap: 10px; }
+
+  /* トースト */
+  #toast {
+    position: absolute; left: 50%; top: calc(var(--safe-top) + 64px);
+    transform: translate(-50%, -10px); opacity: 0;
+    background: rgba(30,24,22,0.85); color: var(--ink);
+    padding: 10px 16px; border-radius: 12px; font-size: 13px;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    transition: opacity .3s, transform .3s; pointer-events: none; z-index: 30; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* 設定シート */
+  #scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.45); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 20; }
+  #scrim.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+    background: rgba(28,24,26,0.94);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-radius: 18px 18px 0 0; padding: 8px 16px calc(var(--safe-bottom) + 18px);
+    transform: translateY(105%); transition: transform .38s cubic-bezier(.32,.72,0,1);
+  }
+  .sheet.show { transform: translateY(0); }
+  .grabber { width: 36px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.2); margin: 0 auto 14px; }
+  .sheet-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 18px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .stat { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 6px; text-align: center; }
+  .stat .v { font-size: 18px; font-weight: 700; color: var(--ember); line-height: 1.3; }
+  .stat .l { font-size: 11px; color: var(--secondary); margin-top: 2px; }
+  .group { background: rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; min-height: 50px; }
+  .row + .row { border-top: 0.5px solid var(--sep); }
+  .row .sub { font-size: 12px; color: var(--tertiary); margin-top: 2px; }
+  .switch { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch span { position: absolute; inset: 0; border-radius: 16px; background: rgba(120,120,128,0.36); transition: background .2s; cursor: pointer; }
+  .switch span::after { content: ''; position: absolute; left: 2px; top: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.25); transition: transform .2s; }
+  .switch input:checked + span { background: #FF8A3D; }
+  .switch input:checked + span::after { transform: translateX(20px); }
+  #versionLabel { text-align: center; padding-top: 16px; font-size: 12px; color: var(--tertiary); }
+
+  /* 更新バナー */
+  #updateBanner {
+    position: fixed; left: 12px; right: 12px;
+    bottom: calc(var(--safe-bottom) + 16px); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #FF8A3D; color: #2a1306; border: 0; border-radius: 14px;
+    padding: 14px 18px; font-family: inherit; font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 28px rgba(255,120,40,0.4); cursor: pointer;
+    transform: translateY(140%); transition: transform 0.35s cubic-bezier(.32,.72,0,1);
+  }
+  #updateBanner.show { transform: translateY(0); }
+  #updateBanner svg { display: block; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="fire"></canvas>
+
+  <div class="top">
+    <div class="left">
+      <button class="round-btn" id="soundBtn" aria-label="音"></button>
+      <button class="round-btn" id="peopleBtn" aria-label="火のまわり">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.6 0 4.5 1.9 4.5 5"/></svg>
+      </button>
+    </div>
+    <div class="right">
+      <button class="round-btn pill" id="sleepBtn" aria-label="おやすみタイマー">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        <span id="sleepLeft"></span>
+      </button>
+      <button class="round-btn" id="menuBtn" aria-label="記録と設定">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="goodnight">おやすみなさい</div>
+  <div id="caption"><div class="who"></div><div class="line"></div></div>
+
+  <div id="hint">タップして火をつける</div>
+
+  <div class="bottom hide" id="bottom">
+    <div id="status"></div>
+    <div class="btn-row">
+    <button id="logBtn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-12 12 12)"/><ellipse cx="19.3" cy="10.2" rx="1.2" ry="2.6" transform="rotate(-12 19.3 10.2)"/></svg>
+      <span id="logLabel">薪をくべる</span>
+    </button>
+    <button id="storyBtn" class="hidden" aria-label="昔話"></button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="scrim"></div>
+  <div class="sheet" id="sheet">
+    <div class="grabber"></div>
+    <div class="sheet-title">これまでの焚き火</div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="stTime">0分</div><div class="l">火のそばにいた</div></div>
+      <div class="stat"><div class="v" id="stLogs">0本</div><div class="l">くべた薪</div></div>
+      <div class="stat"><div class="v" id="stFires">0回</div><div class="l">火をつけた</div></div>
+      <div class="stat"><div class="v" id="stStories">0話</div><div class="l">聞いた昔話</div></div>
+    </div>
+    <div class="group">
+      <div class="row">
+        <div><div>音</div><div class="sub">ぱちぱち・ごうごう</div></div>
+        <label class="switch"><input type="checkbox" id="optSound"><span></span></label>
+      </div>
+      <div class="row">
+        <div><div>画面をつけたままにする</div><div class="sub">火が燃えているあいだ</div></div>
+        <label class="switch"><input type="checkbox" id="optWake"><span></span></label>
+      </div>
+      <div class="row">
+        <div><div>虫の声</div><div class="sub">秋の夜の、遠くの虫</div></div>
+        <label class="switch"><input type="checkbox" id="optMushi"><span></span></label>
+      </div>
+      <div class="row">
+        <div><div>夜はおだやかに</div><div class="sub">20時〜5時は火も音もゆっくり</div></div>
+        <label class="switch"><input type="checkbox" id="optNight"><span></span></label>
+      </div>
+    </div>
+    <div id="versionLabel"></div>
+  </div>
+
+  <div class="sheet" id="peopleSheet">
+    <div class="grabber"></div>
+    <div class="sheet-title">火のまわり</div>
+    <div class="sheet-desc">火のむこうに座ってもらう人を選んでください。<br>座っている人が、昔話をしてくれます。</div>
+    <div class="people" id="peopleList"></div>
+    <div class="group">
+      <div class="row">
+        <div><div>声で読む</div><div class="sub">字幕はいつも出ます</div></div>
+        <label class="switch"><input type="checkbox" id="optVoice"><span></span></label>
+      </div>
+    </div>
+    <button class="primary-btn" id="storyStart">昔話をきく</button>
+  </div>
+
+  <div class="sheet" id="sleepSheet">
+    <div class="grabber"></div>
+    <div class="sheet-title">おやすみタイマー</div>
+    <div class="sheet-desc">火がだんだん小さくなって、<br>音と明かりがゆっくり消えていきます。<br>そのあいだ薪は尽きません。</div>
+    <div class="choices">
+      <button class="choice" data-min="15">15<small>分</small></button>
+      <button class="choice" data-min="30">30<small>分</small></button>
+      <button class="choice" data-min="60">60<small>分</small></button>
+    </div>
+    <button class="stop-btn" id="sleepStop">タイマーをやめる</button>
+  </div>
+</div>
+
+<script>
+  // ---------- DOM helper ----------
+  const $ = (s) => document.querySelector(s);
+
+  // ---------- バージョン ----------
+  // リリースのたびに sw.js の CACHE 名とセットで上げる
+  const APP_VERSION = '1.2.0';
+
+  // ---------- IndexedDB（記録だけ保存） ----------
+  // DB名・キーは一度決めたら変えない（データ互換のため）
+  const DB_NAME = 'takibi-db';
+  const DB_VERSION = 1;
+  let _db = null;
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('stats')) db.createObjectStore('stats', { keyPath: 'id' });
+      };
+      req.onsuccess = () => { _db = req.result; resolve(_db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function dbGet(store, id) {
+    return new Promise((res, rej) => {
+      if (!_db) return res(null);
+      const r = _db.transaction(store).objectStore(store).get(id);
+      r.onsuccess = () => res(r.result || null); r.onerror = () => rej(r.error);
+    });
+  }
+  function dbPut(store, val) {
+    return new Promise((res, rej) => {
+      if (!_db) return res();
+      const r = _db.transaction(store, 'readwrite').objectStore(store).put(val);
+      r.onsuccess = () => res(); r.onerror = () => rej(r.error);
+    });
+  }
+
+  // 記録（数字は増えるだけ）
+  const stats = { id: 'total', seconds: 0, logs: 0, fires: 0, stories: 0, updatedAt: 0 };
+  let statsDirty = false, lastStatsSave = 0;
+  async function loadStats() {
+    try { const s = await dbGet('stats', 'total'); if (s) Object.assign(stats, s); } catch (e) {}
+  }
+  async function saveStats() {
+    if (!statsDirty) return;
+    statsDirty = false; lastStatsSave = performance.now();
+    stats.updatedAt = Date.now();
+    try { await dbPut('stats', { ...stats }); } catch (e) {}
+  }
+
+  // ---------- 設定（localStorage） ----------
+  const PREF_KEY = 'takibi.prefs';
+  const prefs = { sound: true, wake: true, mushi: true, night: true, voice: true, people: ['jii'] };
+  try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) {}
+  function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} }
+
+  // ---------- 火の状態 ----------
+  const LOG_MIN = 10;   // 薪1本で燃える分数
+  const MAX_FUEL = 40;  // 一度に積める上限（分）
+  const EMBER_SEC = 180; // 熾火が冷めるまでの秒数
+  const F = {
+    started: false,  // 一度でも火をつけたか（ヒント表示用）
+    fuel: 0,         // 残り燃料（分）
+    ember: 0.12,     // 熾火の熱 0..1（最初はほんのり）
+    I: 0,            // 表示上の火の強さ 0..1（なめらかに追従）
+    flare: 0,        // 薪をくべた直後のぼわっと
+    ignite: 0,       // 着火の立ち上がり 0..1
+  };
+  // おやすみタイマー（実時間で進む）
+  const S = { active: false, start: 0, dur: 0, k: 0, done: false };
+  const ease = (x) => x * x * (3 - 2 * x);
+  let dimK = 0;      // 画面の暗さ 0..1
+  let nightK = 0;    // 夜らしさ 0..1
+  let breathPh = 0;  // 呼吸のゆらぎの位相
+  function isNightHour() { const h = new Date().getHours(); return h >= 20 || h < 5; }
+
+  function targetIntensity() {
+    if (F.fuel <= 0) return 0;
+    return Math.min(1, F.fuel / 20) * 0.7 + 0.3 * Math.min(1, F.fuel / 2);
+  }
+  function isBurning() { return F.fuel > 0; }
+  function isOut() { return F.fuel <= 0 && F.ember < 0.05; }
+
+  // ---------- Canvas ----------
+  const cv = $('#fire');
+  const ctx = cv.getContext('2d');
+  let W = 0, H = 0, DPR = 1;
+  let cx = 0, by = 0, fw = 0; // 火の中心x・根元y・火の幅
+  let stars = [], stones = [];
+
+  function resize() {
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    cx = W / 2; by = H * 0.64; fw = Math.min(W, H * 0.6) * 0.42;
+    // 星
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    stars = Array.from({ length: 70 }, () => ({ x: rnd() * W, y: rnd() * H * 0.5, r: 0.4 + rnd() * 1.1, a: 0.2 + rnd() * 0.6, s: rnd() * 6.28, f: 0.5 + rnd() * 1.5 }));
+    // 石（焚き火を囲む）
+    stones = [];
+    const n = 11;
+    for (let i = 0; i < n; i++) {
+      const ang = (i / n) * Math.PI * 2 + rnd() * 0.2;
+      stones.push({
+        x: cx + Math.cos(ang) * fw * 0.98,
+        y: by + Math.sin(ang) * fw * 0.3,
+        rx: fw * (0.15 + rnd() * 0.07),
+        ry: fw * (0.09 + rnd() * 0.05),
+        front: Math.sin(ang) > 0,
+        tone: 30 + Math.floor(rnd() * 16),
+      });
+    }
+    stones.sort((a, b) => a.y - b.y);
+  }
+  window.addEventListener('resize', resize);
+
+  // 炎の粒のスプライト（放射グラデ）を色ごとに用意
+  const FLAME_COLORS = [[255, 250, 225], [255, 214, 100], [255, 146, 40], [232, 74, 18], [130, 30, 12]];
+  const sprites = FLAME_COLORS.map(([r, g, b]) => {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const x = c.getContext('2d');
+    const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, `rgba(${r},${g},${b},1)`);
+    gr.addColorStop(0.35, `rgba(${r},${g},${b},0.55)`);
+    gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+    return c;
+  });
+
+  // 月（三日月）
+  const moon = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 120;
+    const x = c.getContext('2d');
+    const gl = x.createRadialGradient(60, 60, 0, 60, 60, 60);
+    gl.addColorStop(0, 'rgba(255,240,210,0.18)'); gl.addColorStop(1, 'rgba(255,240,210,0)');
+    x.fillStyle = gl; x.fillRect(0, 0, 120, 120);
+    const m = document.createElement('canvas'); m.width = m.height = 120;
+    const y = m.getContext('2d');
+    y.fillStyle = '#f3e6c8'; y.beginPath(); y.arc(60, 60, 15, 0, 6.283); y.fill();
+    y.globalCompositeOperation = 'destination-out';
+    y.beginPath(); y.arc(68, 54, 13.5, 0, 6.283); y.fill();
+    x.drawImage(m, 0, 0);
+    return c;
+  })();
+  const meteors = [];
+
+  // ---------- 火のまわりの人（シルエット。200x200の箱で定義） ----------
+  const SHAPE = {
+    body: 'M55 188 C58 150 60 120 66 104 C72 92 86 88 100 88 C114 88 128 92 134 104 C140 120 142 150 145 188 Z',
+    shawl: 'M46 188 C48 150 52 118 60 101 C69 89 86 85 100 85 C114 85 131 89 140 101 C148 118 152 150 154 188 Z',
+    legs: 'M18 192 C18 172 60 166 100 170 C140 166 182 172 182 192 C182 200 18 200 18 192 Z',
+    head: 'M78 64 a22 22 0 1 0 44 0 a22 22 0 1 0 -44 0 Z',
+    beard: 'M83 70 C86 104 114 104 117 70 C110 80 90 80 83 70 Z',
+    bun: 'M89 38 a11 11 0 1 0 22 0 a11 11 0 1 0 -22 0 Z',
+    hat: 'M36 58 L164 58 C154 52 122 26 100 24 C78 26 46 52 36 58 Z',
+    staff: 'M158 196 L165 196 L171 24 L165 24 Z',
+  };
+  const PEOPLE = {
+    jii:  { name: 'おじいさん', d: SHAPE.body + SHAPE.legs + SHAPE.head + SHAPE.beard, pitch: 0.65, rate: 0.85, male: true,
+            seat: { x: -0.8, y: -0.24, h: 0.75 },
+            open: (t) => `どれ、「${t}」の話をしようかの。`, close: '……おしまい。' },
+    baa:  { name: 'おばあさん', d: SHAPE.shawl + SHAPE.legs + SHAPE.head + SHAPE.bun, pitch: 1.15, rate: 0.82, male: false,
+            seat: { x: 0.8, y: -0.24, h: 0.72 },
+            open: (t) => `それじゃあ、「${t}」のお話をしようかねえ。`, close: '……めでたし、めでたし。' },
+    tabi: { name: 'たびびと', d: SHAPE.body + SHAPE.legs + SHAPE.head + SHAPE.hat + SHAPE.staff, pitch: 0.9, rate: 0.92, male: true,
+            seat: { x: -0.4, y: -0.42, h: 0.52 },
+            open: (t) => `旅のとちゅうで聞いた、「${t}」という話をしよう。`, close: '……そんな話さ。' },
+  };
+  const PEOPLE_ORDER = ['tabi', 'jii', 'baa']; // 奥から描く
+  const paths = {};
+  for (const k in PEOPLE) { try { paths[k] = new Path2D(PEOPLE[k].d); } catch (e) {} }
+
+  function drawPeople(heat, fl) {
+    for (const k of PEOPLE_ORDER) {
+      if (!prefs.people.includes(k) || !paths[k]) continue;
+      const p = PEOPLE[k], s = p.seat;
+      const hgt = fw * s.h, sc = hgt / 200;
+      const speaking = story.on && story.who === k;
+      const x = cx + s.x * fw - hgt / 2;
+      const y = by + s.y * fw - hgt + (speaking ? Math.sin(t * 6) * 0.8 : 0);
+      ctx.save();
+      ctx.translate(x, y);
+      // 息づかい
+      const br = 1 + 0.012 * Math.sin(t * 0.9 + s.x * 3);
+      ctx.translate(100 * sc, 200 * sc); ctx.scale(sc, sc * br); ctx.translate(-100, -200);
+      if (s.x > 0.3) { ctx.translate(200, 0); ctx.scale(-1, 1); } // 右側の人は左右反転（杖の向き）
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#0d0908';
+      ctx.fill(paths[k]);
+      if (heat > 0.01) {
+        // 火に照らされる（下ほど明るい）
+        ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createLinearGradient(0, 200, 0, 20);
+        g.addColorStop(0, `rgba(255,130,60,${0.34 * heat * fl})`);
+        g.addColorStop(0.6, `rgba(230,100,45,${0.2 * heat * fl})`);
+        g.addColorStop(1, `rgba(200,80,40,${0.09 * heat * fl})`);
+        ctx.fillStyle = g; ctx.fill(paths[k]);
+      }
+      ctx.restore();
+    }
+  }
+
+  const flames = [], sparks = [];
+  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+
+  function spawnFlame(I) {
+    const spread = fw * 0.3 * (0.55 + 0.45 * I);
+    const up = (80 + Math.random() * 110) * (0.55 + 0.7 * I);
+    flames.push({
+      x: cx + gauss() * spread, y: by - fw * 0.06 + Math.random() * fw * 0.05,
+      vx: gauss() * 12, vy: -up,
+      r: fw * (0.09 + Math.random() * 0.12) * (0.5 + 0.55 * I),
+      life: 0, max: 0.55 + Math.random() * 0.65, seed: Math.random() * 100,
+    });
+  }
+  function spawnSpark(power = 1) {
+    sparks.push({
+      x: cx + gauss() * fw * 0.25, y: by - fw * 0.15 - Math.random() * fw * 0.2,
+      vx: gauss() * 40 * power, vy: -(70 + Math.random() * 150) * power,
+      life: 0, max: 1.2 + Math.random() * 1.8, seed: Math.random() * 100,
+      size: 0.8 + Math.random() * 1.3,
+    });
+  }
+
+  // ---------- 描画 ----------
+  let t = 0;
+  function flicker(speed, s) {
+    return 0.75 + 0.15 * Math.sin(t * speed + s) + 0.1 * Math.sin(t * speed * 2.7 + s * 3.1);
+  }
+
+  function drawScene(dt) {
+    const I = F.I;
+    const heat = Math.max(I, F.ember * 0.35);
+    const fl = flicker(9, 0) * (1 + F.flare * 0.4);
+
+    // 空
+    ctx.globalCompositeOperation = 'source-over';
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#04050b'); sky.addColorStop(0.55, '#0d0b17'); sky.addColorStop(0.62, '#0a0709'); sky.addColorStop(1, '#050304');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+    // 星（火が強いと少し見えにくくなる）
+    for (const s of stars) {
+      const a = s.a * (0.6 + 0.4 * Math.sin(t * s.f + s.s)) * (1 - 0.45 * I);
+      ctx.fillStyle = `rgba(220,225,255,${a})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+    }
+
+    // 夜は月と流れ星
+    if (nightK > 0.01) {
+      ctx.globalAlpha = nightK * 0.9;
+      ctx.drawImage(moon, W * 0.72 - 60, H * 0.18 - 60);
+      ctx.globalAlpha = 1;
+      if (Math.random() < nightK * dt / 70) {
+        meteors.push({ x: W * (0.1 + Math.random() * 0.6), y: H * (0.04 + Math.random() * 0.2), life: 0, max: 0.9 + Math.random() * 0.5, a: 0.35 + Math.random() * 0.25 });
+      }
+    }
+    for (let i = meteors.length - 1; i >= 0; i--) {
+      const m = meteors[i]; m.life += dt;
+      const k = m.life / m.max;
+      if (k >= 1) { meteors.splice(i, 1); continue; }
+      const hx = m.x + k * 160, hy = m.y + k * 70;
+      const g = ctx.createLinearGradient(hx - 60, hy - 26, hx, hy);
+      g.addColorStop(0, 'rgba(230,235,255,0)'); g.addColorStop(1, `rgba(230,235,255,${Math.sin(k * Math.PI) * 0.8})`);
+      ctx.strokeStyle = g; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(hx - 60, hy - 26); ctx.lineTo(hx, hy); ctx.stroke();
+    }
+
+    // 地面
+    const horizon = by - fw * 0.45;
+    const gnd = ctx.createLinearGradient(0, horizon, 0, H);
+    gnd.addColorStop(0, '#0d0a0b'); gnd.addColorStop(1, '#040303');
+    ctx.fillStyle = gnd; ctx.fillRect(0, horizon, W, H - horizon);
+
+    // まわりの明るさ
+    ctx.globalCompositeOperation = 'lighter';
+    if (heat > 0.01) {
+      const R = Math.max(W, H) * (0.35 + 0.45 * heat);
+      const amb = ctx.createRadialGradient(cx, by - fw * 0.4, 0, cx, by - fw * 0.4, R);
+      amb.addColorStop(0, `rgba(255,120,40,${0.22 * heat * fl})`);
+      amb.addColorStop(0.5, `rgba(180,60,20,${0.07 * heat * fl})`);
+      amb.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = amb; ctx.fillRect(0, 0, W, H);
+      // 地面に落ちる光
+      ctx.save(); ctx.translate(cx, by); ctx.scale(1, 0.3);
+      const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, fw * 2.4);
+      gg.addColorStop(0, `rgba(255,130,50,${0.38 * heat * fl})`);
+      gg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, 0, fw * 2.4, 0, 6.283); ctx.fill();
+      ctx.restore();
+    }
+
+    // 火のむこうに座る人
+    drawPeople(heat, fl);
+
+    // 奥の石
+    ctx.globalCompositeOperation = 'source-over';
+    for (const s of stones) if (!s.front) drawStone(s, heat, fl);
+
+    // 灰と熾火の床
+    ctx.save(); ctx.translate(cx, by); ctx.scale(1, 0.32);
+    ctx.fillStyle = '#16100d';
+    ctx.beginPath(); ctx.arc(0, 0, fw * 0.75, 0, 6.283); ctx.fill();
+    ctx.restore();
+    ctx.globalCompositeOperation = 'lighter';
+    {
+      const coal = Math.max(I * 0.9, F.ember * (0.55 + 0.25 * Math.sin(t * 1.3)));
+      ctx.save(); ctx.translate(cx, by); ctx.scale(1, 0.3);
+      const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, fw * 0.7);
+      cg.addColorStop(0, `rgba(255,150,60,${0.75 * coal * fl})`);
+      cg.addColorStop(0.5, `rgba(220,60,15,${0.45 * coal * fl})`);
+      cg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, fw * 0.7, 0, 6.283); ctx.fill();
+      ctx.restore();
+    }
+
+    // 薪
+    drawLogs(heat, fl);
+
+    // 炎
+    ctx.globalCompositeOperation = 'lighter';
+    const wind = (Math.sin(t * 0.7) * 10 + Math.sin(t * 1.9) * 5) * (1 - 0.4 * nightK);
+    for (let i = flames.length - 1; i >= 0; i--) {
+      const p = flames[i];
+      p.life += dt;
+      const k = p.life / p.max;
+      if (k >= 1) { flames.splice(i, 1); continue; }
+      p.vy -= 110 * (0.6 + 0.6 * I) * dt;               // 浮力
+      p.vx += (cx - p.x) * 1.6 * k * dt + Math.sin(t * 6 + p.seed) * 110 * dt; // 先端に集まる＋ゆらぎ
+      p.x += (p.vx + wind * k) * dt; p.y += p.vy * dt;
+      const ci = k < 0.08 ? 0 : k < 0.3 ? 1 : k < 0.56 ? 2 : k < 0.82 ? 3 : 4;
+      const size = p.r * (1 - 0.72 * k) * (1 + F.flare * 0.25);
+      ctx.globalAlpha = Math.min(1, 0.34 * Math.pow(1 - k, 0.6) * (0.3 + 0.7 * Math.min(1, k / 0.22)) * (0.4 + 0.6 * F.ignite));
+      ctx.drawImage(sprites[ci], p.x - size, p.y - size * 1.6, size * 2, size * 3.2);
+    }
+    ctx.globalAlpha = 1;
+
+    // 火の粉
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.life += dt;
+      const k = s.life / s.max;
+      if (k >= 1 || s.y < -10) { sparks.splice(i, 1); continue; }
+      s.vy *= (1 - 0.6 * dt); s.vy -= 8 * dt;
+      s.vx += Math.sin(t * 3 + s.seed) * 60 * dt;
+      s.x += (s.vx + wind) * dt; s.y += s.vy * dt;
+      const a = (1 - k) * (0.6 + 0.4 * Math.sin(t * 25 + s.seed));
+      ctx.globalAlpha = a * 0.5;
+      ctx.drawImage(sprites[2], s.x - 5, s.y - 5, 10, 10);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = `rgba(255,${200 - 80 * k | 0},${120 - 80 * k | 0},${a})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.size * (1 - 0.5 * k), 0, 6.283); ctx.fill();
+    }
+
+    // 手前の石
+    ctx.globalCompositeOperation = 'source-over';
+    for (const s of stones) if (s.front) drawStone(s, heat, fl);
+
+    // 夜は少し暖色に、おやすみ中はだんだん暗く
+    if (nightK > 0.01) { ctx.fillStyle = `rgba(40,14,0,${0.12 * nightK})`; ctx.fillRect(0, 0, W, H); }
+    const darkness = Math.min(0.92, dimK + 0.1 * nightK);
+    if (darkness > 0.005) { ctx.fillStyle = `rgba(0,0,0,${darkness})`; ctx.fillRect(0, 0, W, H); }
+
+    // 画面端を少し暗く
+    const vg = ctx.createRadialGradient(cx, H * 0.55, Math.min(W, H) * 0.3, cx, H * 0.55, Math.max(W, H) * 0.8);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawStone(s, heat, fl) {
+    ctx.fillStyle = `rgb(${s.tone},${s.tone - 2},${s.tone + 2})`;
+    ctx.beginPath(); ctx.ellipse(s.x, s.y, s.rx, s.ry, 0, 0, 6.283); ctx.fill();
+    if (heat > 0.01) {
+      // 火の方向が照らされる
+      const dx = cx - s.x, dy = (by - fw * 0.3) - s.y, d = Math.hypot(dx, dy) || 1;
+      const lx = s.x + dx / d * s.rx * 0.5, ly = s.y + dy / d * s.ry * 0.6;
+      const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, s.rx * 1.1);
+      lg.addColorStop(0, `rgba(255,140,70,${0.5 * heat * fl})`);
+      lg.addColorStop(1, 'rgba(255,140,70,0)');
+      ctx.save(); ctx.beginPath(); ctx.ellipse(s.x, s.y, s.rx, s.ry, 0, 0, 6.283); ctx.clip();
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = lg;
+      ctx.fillRect(s.x - s.rx, s.y - s.ry, s.rx * 2, s.ry * 2);
+      ctx.restore();
+    }
+  }
+
+  // 薪の置き方（交差させて積む）
+  const LOG_POSES = [
+    { dx: 0, dy: 0.02, a: -0.32 },
+    { dx: 0, dy: 0.02, a: 0.32 },
+    { dx: -0.05, dy: -0.06, a: 0.1 },
+    { dx: 0.06, dy: -0.1, a: -0.14 },
+  ];
+  function drawLogs(heat, fl) {
+    let n = F.fuel > 0 ? Math.ceil(F.fuel / LOG_MIN) : 2;
+    n = Math.max(1, Math.min(4, n));
+    const len = fw * 1.25, th = fw * 0.19;
+    for (let i = 0; i < n; i++) {
+      const p = LOG_POSES[i];
+      // 燃えている薪ほど黒く
+      const char = F.fuel > 0 ? (i < n - 1 ? 0.7 : 0.3) : 0.9;
+      ctx.save();
+      ctx.translate(cx + p.dx * fw, by + p.dy * fw);
+      ctx.rotate(p.a);
+      ctx.globalCompositeOperation = 'source-over';
+      const g = ctx.createLinearGradient(0, -th / 2, 0, th / 2);
+      const r1 = 70 - 45 * char, g1 = 45 - 30 * char, b1 = 28 - 18 * char;
+      g.addColorStop(0, `rgb(${r1},${g1},${b1})`);
+      g.addColorStop(1, `rgb(${r1 * 0.45},${g1 * 0.45},${b1 * 0.45})`);
+      ctx.fillStyle = g;
+      roundRect(-len / 2, -th / 2, len, th, th / 2); ctx.fill();
+      // 木口
+      ctx.fillStyle = `rgb(${120 - 70 * char},${84 - 50 * char},${54 - 32 * char})`;
+      ctx.beginPath(); ctx.ellipse(len / 2 - th * 0.15, 0, th * 0.28, th * 0.48, 0, 0, 6.283); ctx.fill();
+      // 赤く光る割れ目
+      if (heat > 0.02) {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = `rgba(255,${90 + 60 * Math.sin(t * 3 + i) | 0},20,${0.55 * heat * fl * char})`;
+        ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+        for (let c = 0; c < 4; c++) {
+          const x0 = -len * 0.3 + c * len * 0.17;
+          ctx.beginPath(); ctx.moveTo(x0, th * 0.15); ctx.lineTo(x0 + th * 0.4, th * 0.32); ctx.stroke();
+        }
+        ctx.fillStyle = `rgba(255,90,20,${0.2 * heat * fl})`;
+        roundRect(-len / 2, -th / 2, len, th, th / 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+
+  // ---------- 音（すべてその場で合成。音源ファイルなし） ----------
+  let ac = null, master = null, rumbleGain = null, whiteBuf = null, cricketGain = null;
+  function masterLevel() {
+    if (!prefs.sound || S.done) return 0;
+    return 1 - 0.95 * ease(S.k);
+  }
+  function initAudio() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+    if (ac) { if (ac.state !== 'running') ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = new AC();
+    master = ac.createGain(); master.gain.value = masterLevel(); master.connect(ac.destination);
+    // ごうごう（低いノイズ）
+    const len = ac.sampleRate * 4;
+    const bb = ac.createBuffer(1, len, ac.sampleRate), d = bb.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
+    const src = ac.createBufferSource(); src.buffer = bb; src.loop = true;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+    rumbleGain = ac.createGain(); rumbleGain.gain.value = 0;
+    src.connect(lp); lp.connect(rumbleGain); rumbleGain.connect(master); src.start();
+    // ぱちぱち用の白色ノイズ
+    whiteBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    const w = whiteBuf.getChannelData(0);
+    for (let i = 0; i < w.length; i++) w[i] = Math.random() * 2 - 1;
+    cricketGain = ac.createGain(); cricketGain.gain.value = prefs.mushi ? 1 : 0; cricketGain.connect(master);
+    if (ac.state !== 'running') ac.resume();
+  }
+
+  // 虫の声（コオロギ風。高い音を短く数回ふるわせる）
+  const crickets = [
+    { f: 4350, vol: 0.022, pan: -0.55, every: 0.95, next: 0 },
+    { f: 4720, vol: 0.016, pan: 0.6, every: 1.35, next: 0 },
+    { f: 3980, vol: 0.011, pan: 0.15, every: 0.75, next: 0 },
+  ];
+  function scheduleCrickets() {
+    if (!ac || ac.state !== 'running' || !prefs.mushi || !prefs.sound || !cricketGain) return;
+    const now = ac.currentTime;
+    for (const c of crickets) {
+      if (c.next < now) c.next = now + Math.random() * 1.5;
+      while (c.next < now + 0.4) {
+        const pulses = 2 + (Math.random() * 3 | 0);
+        const st = c.next;
+        const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = c.f * (0.99 + Math.random() * 0.02);
+        const g = ac.createGain(); g.gain.setValueAtTime(0.0001, st);
+        for (let p = 0; p < pulses; p++) {
+          const ts = st + p * 0.048;
+          g.gain.setValueAtTime(0.0001, ts);
+          g.gain.linearRampToValueAtTime(c.vol, ts + 0.01);
+          g.gain.linearRampToValueAtTime(0.0001, ts + 0.034);
+        }
+        let out = g;
+        if (ac.createStereoPanner) { const pn = ac.createStereoPanner(); pn.pan.value = c.pan; g.connect(pn); out = pn; }
+        o.connect(g); out.connect(cricketGain);
+        o.start(st); o.stop(st + pulses * 0.048 + 0.06);
+        // ときどき鳴きやむ
+        c.next += c.every * (0.85 + Math.random() * 0.35) + (Math.random() < 0.08 ? 2 + Math.random() * 5 : 0);
+      }
+    }
+  }
+  function crackle(strength = 1) {
+    if (!ac || !prefs.sound || ac.state !== 'running') return;
+    const tt = ac.currentTime + Math.random() * 0.03;
+    const s = ac.createBufferSource(); s.buffer = whiteBuf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass';
+    bp.frequency.value = 900 + Math.random() * 4200; bp.Q.value = 0.6 + Math.random() * 2.5;
+    const g = ac.createGain();
+    const dur = 0.004 + Math.random() * Math.random() * 0.05;
+    const peak = (0.08 + Math.random() * 0.4) * strength;
+    g.gain.setValueAtTime(0.0001, tt);
+    g.gain.exponentialRampToValueAtTime(peak, tt + 0.0015);
+    g.gain.exponentialRampToValueAtTime(0.0001, tt + dur);
+    s.connect(bp); bp.connect(g); g.connect(master);
+    s.start(tt, Math.random() * 0.9, dur + 0.02);
+  }
+  function thump() {
+    if (!ac || !prefs.sound || ac.state !== 'running') return;
+    const tt = ac.currentTime;
+    const o = ac.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(110, tt); o.frequency.exponentialRampToValueAtTime(45, tt + 0.25);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.5, tt + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.35);
+    o.connect(g); g.connect(master); o.start(tt); o.stop(tt + 0.4);
+    for (let i = 0; i < 6; i++) setTimeout(() => crackle(1.2), 120 + Math.random() * 900);
+  }
+  let lastRumbleSet = 0;
+  function updateRumble(now) {
+    if (!ac || !rumbleGain || now - lastRumbleSet < 200) return;
+    lastRumbleSet = now;
+    const breath = 1 + 0.25 * Math.sin(breathPh);
+    const v = (0.32 * F.I * (1 + 0.3 * F.flare) + 0.03 * F.ember) * breath * (1 - 0.3 * nightK);
+    rumbleGain.gain.setTargetAtTime(v, ac.currentTime, 0.4);
+    master.gain.setTargetAtTime(masterLevel(), ac.currentTime, 0.5);
+    if (cricketGain) cricketGain.gain.setTargetAtTime(prefs.mushi ? (0.6 + 0.4 * nightK) : 0, ac.currentTime, 0.5);
+  }
+  function applySound() {
+    if (master && ac) master.gain.setTargetAtTime(masterLevel(), ac.currentTime, 0.1);
+    $('#soundBtn').innerHTML = prefs.sound
+      ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>';
+    $('#optSound').checked = prefs.sound;
+  }
+
+  // ---------- 画面をつけたまま（Wake Lock） ----------
+  let wakeLock = null, wakePending = false;
+  async function updateWakeLock() {
+    const want = prefs.wake && F.started && !isOut() && !S.done && document.visibilityState === 'visible';
+    if (want && !wakeLock && !wakePending && 'wakeLock' in navigator) {
+      wakePending = true;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (e) {}
+      wakePending = false;
+    } else if (!want && wakeLock) {
+      try { await wakeLock.release(); } catch (e) {}
+      wakeLock = null;
+    }
+  }
+
+  // ---------- 操作 ----------
+  function igniteFire() {
+    initAudio();
+    wakeFromSleep();
+    F.started = true;
+    F.fuel = LOG_MIN;
+    F.ember = 1;
+    F.ignite = 0;
+    F.flare = 0.3;
+    stats.fires++; stats.logs++; statsDirty = true; saveStats();
+    $('#hint').classList.add('hide');
+    $('#bottom').classList.remove('hide');
+    thump();
+    for (let i = 0; i < 6; i++) spawnSpark(0.7);
+    updateUI(); updateWakeLock();
+  }
+  function addLog() {
+    initAudio();
+    if (isOut() || !F.started) return igniteFire();
+    wakeFromSleep();
+    if (F.fuel + LOG_MIN > MAX_FUEL + 0.01) { toast('いまは十分に燃えています'); return; }
+    F.fuel = Math.max(F.fuel, 0) + LOG_MIN;
+    F.ember = 1;
+    F.flare = 1;
+    if (F.ignite < 1) F.ignite = Math.max(F.ignite, 0.4);
+    stats.logs++; statsDirty = true; saveStats();
+    thump();
+    for (let i = 0; i < 22; i++) spawnSpark(1.2);
+    updateUI(); updateWakeLock();
+  }
+  function poke() {
+    initAudio();
+    if (!F.started || isOut()) return igniteFire();
+    const p = isBurning() ? 1 : 0.5;
+    for (let i = 0; i < 10 * p; i++) spawnSpark(0.9);
+    for (let i = 0; i < 3; i++) setTimeout(() => crackle(0.9), Math.random() * 300);
+    if (isBurning()) F.flare = Math.min(1, F.flare + 0.25);
+  }
+
+  // ---------- 昔話 ----------
+  const STORIES = [
+    { id: 'kasa', title: 'かさじぞう', lines: [
+      'むかし、山のふもとに、貧しいおじいさんとおばあさんが住んでおった。',
+      '年の暮れ、おじいさんは、編んだ笠を売りに町へ出かけた。',
+      'けれど笠はひとつも売れず、雪がしんしんと降ってきた。',
+      '帰り道、峠に六つのお地蔵さまが、雪をかぶって立っておった。',
+      '「さぞ寒かろう」と、おじいさんは売れ残りの笠をかぶせてあげた。',
+      '笠は五つ。足りないひとつには、自分の手ぬぐいをかぶせてあげた。',
+      '家で話すと、おばあさんは「それはよいことをしたねえ」と笑った。',
+      'その夜ふけ、外から、ざっく、ざっくと足音が聞こえてきた。',
+      '戸を開けると、お米や野菜や、あたたかな布団が積んであった。',
+      '雪の道を、笠をかぶったお地蔵さまたちが、帰っていくところじゃった。',
+      'ふたりは、あたたかいお正月をむかえたそうな。',
+    ] },
+    { id: 'nezumi', title: 'ねずみのよめいり', lines: [
+      'むかし、ねずみの夫婦に、それはかわいい娘がおった。',
+      '「この子には、世界でいちばん強いお婿さんを」と、ふたりは考えた。',
+      'まず、お日さまのところへ行った。',
+      'お日さまは「わしより強いのは雲じゃ。雲はわしを隠してしまう」と言った。',
+      '雲のところへ行くと、「わしより強いのは風じゃ。風はわしを吹きとばす」。',
+      '風のところへ行くと、「わしより強いのは壁じゃ。壁だけは動かせん」。',
+      '壁のところへ行くと、壁は困った顔で言った。',
+      '「わしより強いのは、ねずみさんじゃ。わしをかじって穴をあけてしまう」',
+      '夫婦は顔を見合わせて、思わず笑ってしまった。',
+      '娘は、となりの気のいいねずみの若者と、結ばれたそうな。',
+      'ちゅう、ちゅう、と、にぎやかなお嫁入りじゃった。',
+    ] },
+    { id: 'omusubi', title: 'おむすびころりん', lines: [
+      'むかし、働き者のおじいさんが、山で木を切っておった。',
+      'お昼になって、おばあさんのにぎったおむすびを出すと、',
+      'ころりん、ころりん、と転がって、穴の中へ落ちてしまった。',
+      '穴をのぞくと、中から、かわいい歌が聞こえてきた。',
+      '「おむすびころりん、すっとんとん」',
+      'おじいさんは楽しくなって、もうひとつ、ころがしてみた。',
+      'すると穴の中からねずみが顔を出して、おじいさんを招き入れた。',
+      'ねずみたちは、歌って、踊って、ごちそうでもてなしてくれた。',
+      '帰りに、小さなつづらを、おみやげにもらった。',
+      '家で開けてみると、中には宝物が、きらきらと入っておったそうな。',
+    ] },
+    { id: 'warashibe', title: 'わらしべちょうじゃ', lines: [
+      'むかし、なにも持たない、正直な若者がおった。',
+      '観音さまにお参りすると、「最初に手にしたものを大事にしなさい」と告げられた。',
+      'お寺を出たところで転んで、手には一本のわらしべ。',
+      'わらしべにアブを結んで歩いていると、泣いている子どもがおった。',
+      'アブのわらしべをあげると、母親がお礼に、みかんを三つくれた。',
+      'とちゅう、のどがかわいて困っている人に、みかんをあげた。',
+      'お礼に、上等な反物をもらった。',
+      'こんどは、弱った馬を連れて困っているお侍に会った。',
+      '反物と馬をとりかえて、若者は馬に水をやり、やさしくなでてやった。',
+      '元気になった馬を、大きなお屋敷の主人が、たいそう気に入った。',
+      '「旅に出るあいだ、この家を守ってほしい」と頼まれた。',
+      '若者はその家で、のんびり、しあわせに暮らしたそうな。',
+    ] },
+    { id: 'tsuru', title: 'つるのおんがえし', lines: [
+      'むかし、雪の日に、おじいさんは罠にかかった鶴を見つけた。',
+      'かわいそうに思って、そっと逃がしてやった。',
+      'その夜、ひとりの娘が「道に迷いました」と、たずねてきた。',
+      '娘は、よく働く、気立てのやさしい子じゃった。',
+      'ある日、娘は「機を織りますが、決してのぞかないでください」と言った。',
+      'とん、からり、とん、からり。',
+      '織りあがった布は、見たこともないほど美しかった。',
+      'けれど、おばあさんは、つい戸のすきまから、のぞいてしまった。',
+      'そこには、自分の羽をぬいて布を織る、一羽の鶴がおった。',
+      '鶴は空へ舞いあがり、何度もふりかえりながら、遠くへ飛んでいった。',
+      'ふたりは、その布を、いつまでも大切にしたそうな。',
+    ] },
+    { id: 'hoshi', title: '星をひろったこぎつね', lines: [
+      'むかし、山のてっぺんに、一匹のこぎつねが住んでおった。',
+      'ある晩、空から、ちいさな星がひとつ、ぽとりと落ちてきた。',
+      '星は、草のあいだで、心ぼそそうに光っておった。',
+      '「おうちに帰りたいんだね」こぎつねは、星をそっとくわえた。',
+      '木にのぼっても、空には届かない。',
+      '岩にのぼっても、まだ届かない。',
+      'こぎつねは、いちばん高い杉の木の、てっぺんまでのぼっていった。',
+      'そこで、ふうっと、星に息をふきかけた。',
+      '星はふわりと浮かんで、空の、もとの場所へもどっていった。',
+      'それからその星は、毎晩、こぎつねの巣穴を照らすようになった。',
+      '今夜も、どこかで、ちいさく光っておるかもしれんのう。',
+    ] },
+    { id: 'yama', title: 'ねむれない山', lines: [
+      'むかし、どうしても眠れない山があった。',
+      '夜になっても、山は目をぱっちりあけて、考えごとをしておった。',
+      '「明日は雨かなあ。木の実は足りるかなあ」',
+      '見かねた風が、山の肩を、そうっとなでた。',
+      '川は、さらさら、さらさら、と、低い声で歌った。',
+      'ふくろうは、ほう、ほう、と、ゆっくり数をかぞえた。',
+      'ひとつ。……ふたつ。……みっつ。',
+      '山のまぶたが、すこしずつ、重たくなっていった。',
+      '雲が、やわらかな布団のように、山の上にかかった。',
+      '「明日のことは、明日の朝に考えよう」',
+      '山はそうつぶやいて、ふかい、ふかい眠りについた。',
+      '森の動物たちも、みんな、いっしょに眠ったそうな。',
+    ] },
+    { id: 'takibi', title: 'たき火のたびびと', lines: [
+      'むかし、冬の森で、ひとりの旅人が焚き火をしておった。',
+      'ぱちぱち、と火がはぜると、一匹のうさぎがやってきた。',
+      '「すこし、あたらせてもらえますか」',
+      '「どうぞ、どうぞ」と、旅人は場所をあけた。',
+      'しばらくすると、たぬきがやってきた。つぎは、しかの親子。',
+      'さいごに、大きなくまが、のっそりやってきた。',
+      'みんな、はじめは、すこしこわごわしておった。',
+      'けれど火のあたたかさに、だんだん顔がゆるんでいった。',
+      'うさぎはくまのおなかにもたれて、うとうとしはじめた。',
+      '旅人は、そっと薪を一本くべた。',
+      'その夜、森の焚き火のまわりで、みんな、ぐっすり眠ったそうな。',
+    ] },
+  ];
+
+  const story = { on: false, who: null, lines: [], idx: 0, timer: null, sid: null };
+  const HEARD_KEY = 'takibi.heard';
+  function pickStory() {
+    let heard = [];
+    try { heard = JSON.parse(localStorage.getItem(HEARD_KEY) || '[]'); } catch (e) {}
+    let pool = STORIES.filter((s) => !heard.includes(s.id));
+    if (!pool.length) { heard = []; pool = STORIES.slice(); }
+    const s = pool[Math.random() * pool.length | 0];
+    heard.push(s.id);
+    try { localStorage.setItem(HEARD_KEY, JSON.stringify(heard)); } catch (e) {}
+    return s;
+  }
+
+  // 読み上げの声（日本語の声を、人ごとに選ぶ）
+  let jaVoices = [];
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return;
+    jaVoices = speechSynthesis.getVoices().filter((v) => /^ja/i.test(v.lang));
+  }
+  if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', loadVoices); }
+  const MALE = /otoya|hattori|ichiro|takumi|keita|daichi|male|男/i;
+  const FEMALE = /kyoko|o-ren|oren|sayaka|haruka|ayumi|nanami|mizuki|female|女/i;
+  function voiceFor(who) {
+    if (!jaVoices.length) loadVoices();
+    const want = PEOPLE[who].male ? MALE : FEMALE;
+    return jaVoices.find((v) => want.test(v.name)) || jaVoices[0] || null;
+  }
+
+  function speakLine(text, who, done) {
+    let finished = false;
+    const fin = () => { if (finished) return; finished = true; clearTimeout(guard); done(); };
+    // 声なし・音なしのときは、文字数に合わせて待つ
+    const readMs = 1800 + text.length * 170;
+    const vol = masterLevel();
+    if (!prefs.voice || vol <= 0.02 || !('speechSynthesis' in window)) {
+      var guard = setTimeout(fin, readMs * (1 + 0.5 * ease(S.k)));
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(text.replace(/[「」『』]/g, ''));
+    u.lang = 'ja-JP';
+    const v = voiceFor(who); if (v) u.voice = v;
+    const p = PEOPLE[who];
+    u.pitch = p.pitch; u.rate = p.rate * (1 - 0.15 * ease(S.k)); u.volume = Math.min(1, 0.95 * vol);
+    u.onend = fin; u.onerror = fin;
+    var guard = setTimeout(fin, text.length * 450 + 5000); // iOSで onend が来ないときの保険
+    try { speechSynthesis.speak(u); } catch (e) { fin(); }
+  }
+
+  function showCaption(who, text) {
+    const c = $('#caption'), line = c.querySelector('.line');
+    c.querySelector('.who').textContent = PEOPLE[who].name;
+    line.classList.add('fade');
+    setTimeout(() => { line.textContent = text; line.classList.remove('fade'); }, 350);
+    c.classList.add('show');
+  }
+  function hideCaption() { $('#caption').classList.remove('show'); }
+
+  function startStory() {
+    const present = PEOPLE_ORDER.filter((k) => prefs.people.includes(k));
+    if (!present.length) { toast('火のまわりに、だれも座っていません'); return; }
+    initAudio();
+    if (!F.started || isOut()) igniteFire();
+    stopStory(true);
+    const who = present[Math.random() * present.length | 0];
+    const s = pickStory();
+    story.on = true; story.who = who; story.sid = s.id; story.idx = 0;
+    story.lines = [PEOPLE[who].open(s.title), ...s.lines, PEOPLE[who].close];
+    closeSheet(); renderStoryBtn();
+    story.timer = setTimeout(nextLine, 900);
+  }
+  function nextLine() {
+    if (!story.on) return;
+    if (story.idx >= story.lines.length) return endStory();
+    const text = story.lines[story.idx++];
+    const who = story.who;
+    showCaption(who, text);
+    speakLine(text, who, () => {
+      if (!story.on) return;
+      story.timer = setTimeout(nextLine, 900 + 1200 * ease(S.k) + (story.idx === 1 ? 600 : 0));
+    });
+  }
+  function endStory() {
+    story.on = false; story.who = null;
+    stats.stories = (stats.stories || 0) + 1; statsDirty = true; saveStats();
+    story.timer = setTimeout(hideCaption, 2500);
+    renderStoryBtn();
+    // おやすみタイマー中は、少し間をおいて次の話へ
+    if (S.active) story.timer = setTimeout(() => { hideCaption(); if (S.active) story.timer = setTimeout(startStory, 4000); }, 2500);
+  }
+  function stopStory(silent) {
+    clearTimeout(story.timer);
+    const was = story.on;
+    story.on = false; story.who = null;
+    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+    if (!silent || was) hideCaption();
+    renderStoryBtn();
+  }
+
+  function renderStoryBtn() {
+    const b = $('#storyBtn');
+    b.classList.toggle('hidden', !prefs.people.length);
+    b.innerHTML = story.on
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>'
+      : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5c3-1.3 6.5-1.3 10 1 3.5-2.3 7-2.3 10-1V19c-3-1.3-6.5-1.3-10 1-3.5-2.3-7-2.3-10-1z"/><path d="M12 6.5V20"/></svg>';
+    b.setAttribute('aria-label', story.on ? '昔話をやめる' : '昔話をきく');
+    const sb = $('#storyStart'); if (sb) sb.disabled = !prefs.people.length;
+  }
+  function renderPeopleList() {
+    $('#peopleList').innerHTML = ['jii', 'baa', 'tabi'].map((k) =>
+      `<button class="person${prefs.people.includes(k) ? ' on' : ''}" data-k="${k}">
+        <svg viewBox="0 0 200 200"${k === 'baa' ? ' style="transform:scaleX(-1)"' : ''}><path fill="currentColor" d="${PEOPLE[k].d}"/></svg>
+        <span>${PEOPLE[k].name}</span></button>`).join('');
+    $('#peopleList').querySelectorAll('.person').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.k;
+      if (prefs.people.includes(k)) {
+        prefs.people = prefs.people.filter((x) => x !== k);
+        if (story.who === k) stopStory();
+      } else prefs.people.push(k);
+      savePrefs(); renderPeopleList(); renderStoryBtn();
+    }));
+    $('#optVoice').checked = prefs.voice;
+  }
+  $('#peopleBtn').addEventListener('click', () => { renderPeopleList(); renderStoryBtn(); openSheetEl('#peopleSheet'); });
+  $('#storyStart').addEventListener('click', startStory);
+  $('#storyBtn').addEventListener('click', () => { story.on ? stopStory() : startStory(); });
+  $('#optVoice').addEventListener('change', (e) => {
+    prefs.voice = e.target.checked; savePrefs();
+    if (!prefs.voice) { try { speechSynthesis.cancel(); } catch (er) {} }
+  });
+
+  // ---------- おやすみタイマー ----------
+  function startSleep(min) {
+    initAudio();
+    if (!F.started || isOut()) igniteFire();
+    F.fuel = Math.max(F.fuel, LOG_MIN);
+    S.active = true; S.done = false; S.start = Date.now(); S.dur = min * 60000; S.k = 0;
+    $('#goodnight').classList.remove('show');
+    closeSheet();
+    toast(`${min}分かけて、ゆっくり消えていきます`);
+    updateWakeLock();
+  }
+  function stopSleep() {
+    S.active = false; S.k = 0;
+    closeSheet(); applySound();
+  }
+  function finishSleep() {
+    S.active = false; S.done = true; S.k = 1;
+    stopStory();
+    F.fuel = 0; F.ember = 0.9;
+    const gn = $('#goodnight'); gn.classList.add('show');
+    setTimeout(() => gn.classList.remove('show'), 7000);
+    saveStats(); updateWakeLock();
+  }
+  function wakeFromSleep() {
+    if (S.done) { S.done = false; S.k = 0; $('#goodnight').classList.remove('show'); applySound(); }
+  }
+  function updateSleep() {
+    if (S.active) {
+      S.k = Math.min(1, (Date.now() - S.start) / S.dur);
+      if (S.k >= 1) finishSleep();
+    }
+    const target = S.active ? 0.85 * ease(S.k) : (S.done ? 0.9 : 0);
+    return target;
+  }
+  let lastSleepLabel = null;
+  function renderSleepBtn() {
+    const txt = S.active ? Math.max(1, Math.ceil((S.dur - (Date.now() - S.start)) / 60000)) + '分' : '';
+    if (txt === lastSleepLabel) return;
+    lastSleepLabel = txt;
+    $('#sleepLeft').textContent = txt;
+    $('#sleepLeft').style.display = txt ? '' : 'none';
+    $('#sleepBtn').classList.toggle('on', S.active);
+    $('#sleepStop').style.display = S.active ? '' : 'none';
+  }
+  $('#sleepBtn').addEventListener('click', () => { renderSleepBtn(); openSheetEl('#sleepSheet'); });
+  document.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', () => startSleep(+b.dataset.min)));
+  $('#sleepStop').addEventListener('click', stopSleep);
+
+  // ---------- 触らないとUIが消える ----------
+  let lastTouch = performance.now();
+  document.addEventListener('pointerdown', () => { lastTouch = performance.now(); document.body.classList.remove('idle'); }, true);
+  function updateIdle(now) {
+    const sheetOpen = !!document.querySelector('.sheet.show');
+    const wait = (S.active || S.done) ? 4000 : (nightK > 0.5 ? 7000 : 12000);
+    const idle = F.started && !sheetOpen && now - lastTouch > wait && (!isOut() || S.done);
+    document.body.classList.toggle('idle', !!idle && !sheetOpen);
+  }
+
+  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); poke(); });
+  $('#logBtn').addEventListener('click', addLog);
+  $('#soundBtn').addEventListener('click', () => { initAudio(); prefs.sound = !prefs.sound; savePrefs(); applySound(); });
+  $('#menuBtn').addEventListener('click', openSheet);
+  $('#scrim').addEventListener('click', closeSheet);
+  $('#optSound').addEventListener('change', (e) => { initAudio(); prefs.sound = e.target.checked; savePrefs(); applySound(); });
+  $('#optWake').addEventListener('change', (e) => { prefs.wake = e.target.checked; savePrefs(); updateWakeLock(); });
+  $('#optMushi').addEventListener('change', (e) => { initAudio(); prefs.mushi = e.target.checked; savePrefs(); lastRumbleSet = 0; });
+  $('#optNight').addEventListener('change', (e) => { prefs.night = e.target.checked; savePrefs(); });
+
+  // シートは下にスワイプでも閉じる
+  document.querySelectorAll('.sheet').forEach((sh) => {
+    let y0 = null, dy = 0;
+    sh.addEventListener('pointerdown', (e) => { if (e.target.closest('.switch')) return; y0 = e.clientY; dy = 0; sh.style.transition = 'none'; });
+    sh.addEventListener('pointermove', (e) => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); sh.style.transform = `translateY(${dy}px)`; });
+    const end = () => { if (y0 === null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 80) closeSheet(); y0 = null; };
+    sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
+  });
+
+  function openSheetEl(sel) { $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
+  function openSheet() { saveStats(); renderStats(); openSheetEl('#sheet'); }
+  function closeSheet() { $('#scrim').classList.remove('show'); document.querySelectorAll('.sheet').forEach((s) => s.classList.remove('show')); }
+
+  function fmtTime(sec) {
+    const m = Math.floor(sec / 60);
+    if (m < 60) return m + '分';
+    const h = Math.floor(m / 60), mm = m % 60;
+    return mm ? `${h}時間${mm}分` : `${h}時間`;
+  }
+  function renderStats() {
+    $('#stTime').textContent = fmtTime(stats.seconds);
+    $('#stLogs').textContent = stats.logs + '本';
+    $('#stFires').textContent = stats.fires + '回';
+    $('#stStories').textContent = (stats.stories || 0) + '話';
+    $('#optWake').checked = prefs.wake;
+    $('#optSound').checked = prefs.sound;
+    $('#optMushi').checked = prefs.mushi;
+    $('#optNight').checked = prefs.night;
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  let lastStatusText = '', lastLabel = '', lastFull = null;
+  function updateUI() {
+    let s;
+    if (!F.started) s = '';
+    else if (S.active) s = 'おやすみタイマー中';
+    else if (isBurning()) s = `あと 約${Math.max(1, Math.ceil(F.fuel))}分`;
+    else if (!isOut()) s = '熾火になりました';
+    else s = '火が消えました';
+    if (s !== lastStatusText) { $('#status').textContent = s; lastStatusText = s; }
+    const label = isOut() ? '火をつける' : '薪をくべる';
+    if (label !== lastLabel) { $('#logLabel').textContent = label; lastLabel = label; }
+    const full = F.fuel + LOG_MIN > MAX_FUEL + 0.01;
+    if (full !== lastFull) { $('#logBtn').classList.toggle('full', full); lastFull = full; }
+  }
+
+  // ---------- 時間の進み ----------
+  // 燃料は実時間で減る（アプリを離れているあいだも燃える）
+  let lastWall = Date.now();
+  function advanceFuel() {
+    const now = Date.now();
+    let sec = Math.max(0, (now - lastWall) / 1000);
+    lastWall = now;
+    if (!F.started) return;
+    if (F.fuel > 0 && S.active) sec = 0;
+    if (F.fuel > 0) {
+      const need = F.fuel * 60;
+      if (sec <= need) { F.fuel -= sec / 60; sec = 0; }
+      else { sec -= need; F.fuel = 0; F.ember = 1; }
+    }
+    if (F.fuel <= 0 && sec > 0) F.ember = Math.max(0, F.ember - sec / EMBER_SEC);
+  }
+
+  let lastFrame = performance.now(), lastWakeCheck = 0, running = true;
+  function frame(now) {
+    if (!running) return;
+    const realDt = (now - lastFrame) / 1000;
+    const dt = Math.min(0.05, realDt);
+    lastFrame = now; t += dt;
+
+    advanceFuel();
+    const dimTarget = updateSleep();
+    dimK += (dimTarget - dimK) * Math.min(1, dt * 0.8);
+    const nightTarget = prefs.night && isNightHour() ? 1 : 0;
+    nightK += (nightTarget - nightK) * Math.min(1, dt * 0.3);
+    document.body.classList.toggle('night', nightK > 0.5);
+    // 呼吸のゆらぎ（1分に約5回。おやすみ中はさらにゆっくり）
+    breathPh += dt * 2 * Math.PI / (11 + 4 * ease(S.k));
+
+    // 火の強さをなめらかに
+    const target = targetIntensity();
+    F.I += (target - F.I) * Math.min(1, dt * (target > F.I ? 0.5 : 0.35));
+    if (F.started && isBurning()) F.ignite = Math.min(1, F.ignite + dt / 6);
+    F.flare *= Math.exp(-dt * 0.9);
+    const sleepCalm = 1 - 0.6 * ease(S.k);
+    const breathe = 1 + (0.05 + 0.07 * ease(S.k) + 0.03 * nightK) * Math.sin(breathPh);
+    const I = Math.min(1, (F.I * (0.35 + 0.65 * F.ignite) + F.flare * 0.15) * sleepCalm * breathe);
+
+    // 粒を出す
+    if (I > 0.01) {
+      let nSpawn = (40 + 220 * I) * dt;
+      while (nSpawn > 0) { if (Math.random() < nSpawn) spawnFlame(I); nSpawn -= 1; }
+      if (Math.random() < (0.8 + 4 * I + 6 * F.flare) * dt) spawnSpark(0.6 + 0.6 * I);
+    } else if (F.ember > 0.2 && Math.random() < 0.15 * F.ember * dt) {
+      spawnSpark(0.35);
+    }
+
+    // ぱちぱち（火の粉と連動）
+    const rate = (I > 0.01 ? (1.2 + 7 * I + 10 * F.flare) : (F.ember > 0.2 ? 0.3 * F.ember : 0)) * (1 - 0.45 * nightK) * (1 - 0.7 * ease(S.k)) * (story.on ? 0.6 : 1);
+    if (Math.random() < rate * dt) {
+      const cluster = Math.random() < 0.25 ? 2 + (Math.random() * 4 | 0) : 1;
+      for (let i = 0; i < cluster; i++) setTimeout(() => crackle((0.6 + 0.6 * I) * (1 - 0.3 * nightK)), i * (20 + Math.random() * 70));
+      if (Math.random() < 0.5) spawnSpark(0.8);
+    }
+    updateRumble(now);
+    scheduleCrickets();
+    updateIdle(now);
+    renderSleepBtn();
+
+    // 描画用に一時的に強さを差し替え
+    const saved = F.I; F.I = I;
+    drawScene(dt);
+    F.I = saved;
+
+    // 記録：見ているあいだだけ数える
+    if (F.started && !isOut()) {
+      stats.seconds += Math.min(realDt, 0.25); statsDirty = true;
+      if (now - lastStatsSave > 10000) saveStats();
+    }
+    if (now - lastWakeCheck > 3000) { lastWakeCheck = now; updateWakeLock(); }
+    updateUI();
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      saveStats();
+      if (story.on) stopStory();
+      if (ac && ac.state === 'running') ac.suspend();
+    } else {
+      if (ac && prefs.sound) ac.resume();
+      lastFrame = performance.now();
+      updateWakeLock();
+    }
+  });
+  window.addEventListener('pagehide', saveStats);
+
+  // ---------- 起動 ----------
+  (async function init() {
+    resize();
+    applySound();
+    $('#versionLabel').textContent = 'v' + APP_VERSION;
+    try { await openDB(); await loadStats(); } catch (e) {}
+    if (!Array.isArray(prefs.people)) prefs.people = ['jii'];
+    renderStats();
+    renderStoryBtn();
+    updateUI();
+    requestAnimationFrame((n) => { lastFrame = n; frame(n); });
+  })();
+
+  // ---------- visualViewport ----------
+  (function setupViewportTracking() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const apply = () => document.documentElement.style.setProperty('--app-height', vv.height + 'px');
+    vv.addEventListener('resize', apply); apply();
+  })();
+
+  // ---------- Service Worker + 自動アップデート ----------
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const swUrl = new URL('sw.js', location.href).href;
+        const res = await fetch(swUrl, { method: 'HEAD' });
+        if (!res.ok) return;
+        const reg = await navigator.serviceWorker.register('sw.js');
+        if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg.waiting);
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBanner(sw);
+          });
+        });
+        reg.update();
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update(); });
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return; refreshing = true; window.location.reload();
+        });
+      } catch (e) {}
+    });
+  }
+  function showUpdateBanner(waitingSW) {
+    if (document.getElementById('updateBanner')) return;
+    const b = document.createElement('button');
+    b.id = 'updateBanner';
+    b.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg><span>新しいバージョンがあります — タップで更新</span>';
+    b.addEventListener('click', () => {
+      saveStats();
+      b.disabled = true; b.querySelector('span').textContent = '更新中…';
+      waitingSW.postMessage('SKIP_WAITING');
+    });
+    document.body.appendChild(b);
+    requestAnimationFrame(() => b.classList.add('show'));
+  }
+</script>
+</body>
+</html>
