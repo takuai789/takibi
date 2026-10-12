@@ -321,7 +321,7 @@
 
   // ---------- バージョン ----------
   // リリースのたびに sw.js の CACHE 名とセットで上げる
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.2.1';
 
   // ---------- IndexedDB（記録だけ保存） ----------
   // DB名・キーは一度決めたら変えない（データ互換のため）
@@ -1053,13 +1053,32 @@
     return jaVoices.find((v) => want.test(v.name)) || jaVoices[0] || null;
   }
 
+  let speechUnlocked = false, speechHintShown = false;
+  function unlockSpeech() {
+    if (speechUnlocked || !('speechSynthesis' in window)) return;
+    speechUnlocked = true;
+    try {
+      const u = new SpeechSynthesisUtterance('。');
+      u.lang = 'ja-JP'; u.volume = 0; u.rate = 2;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  document.addEventListener('pointerdown', unlockSpeech, true);
+  document.addEventListener('touchend', unlockSpeech, true);
+
+  // 声の大きさは「火の音」とは別。声で読む＋おやすみタイマーだけで決まる
+  function voiceLevel() {
+    if (!prefs.voice || S.done) return 0;
+    return 1 - 0.9 * ease(S.k);
+  }
+
   function speakLine(text, who, done) {
     let finished = false;
     const fin = () => { if (finished) return; finished = true; clearTimeout(guard); done(); };
     // 声なし・音なしのときは、文字数に合わせて待つ
     const readMs = 1800 + text.length * 170;
-    const vol = masterLevel();
-    if (!prefs.voice || vol <= 0.02 || !('speechSynthesis' in window)) {
+    const vol = voiceLevel();
+    if (vol <= 0.02 || !('speechSynthesis' in window)) {
       var guard = setTimeout(fin, readMs * (1 + 0.5 * ease(S.k)));
       return;
     }
@@ -1068,9 +1087,20 @@
     const v = voiceFor(who); if (v) u.voice = v;
     const p = PEOPLE[who];
     u.pitch = p.pitch; u.rate = p.rate * (1 - 0.15 * ease(S.k)); u.volume = Math.min(1, 0.95 * vol);
+    let started = false;
+    u.onstart = () => { started = true; };
     u.onend = fin; u.onerror = fin;
     var guard = setTimeout(fin, text.length * 450 + 5000); // iOSで onend が来ないときの保険
-    try { speechSynthesis.speak(u); } catch (e) { fin(); }
+    setTimeout(() => {
+      if (!started && story.on && !speechHintShown) {
+        speechHintShown = true;
+        toast('声が出ないときは、消音モードと音量を確認してください');
+      }
+    }, 3000);
+    try {
+      if (speechSynthesis.paused) speechSynthesis.resume();
+      speechSynthesis.speak(u);
+    } catch (e) { fin(); }
   }
 
   function showCaption(who, text) {
@@ -1093,7 +1123,7 @@
     story.on = true; story.who = who; story.sid = s.id; story.idx = 0;
     story.lines = [PEOPLE[who].open(s.title), ...s.lines, PEOPLE[who].close];
     closeSheet(); renderStoryBtn();
-    story.timer = setTimeout(nextLine, 900);
+    nextLine();
   }
   function nextLine() {
     if (!story.on) return;
