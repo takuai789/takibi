@@ -120,7 +120,7 @@
   /* 昔話の字幕 */
   #caption {
     position: absolute; left: 24px; right: 24px;
-    bottom: calc(var(--safe-bottom) + 132px);
+    bottom: calc(var(--safe-bottom) + 200px);
     text-align: center; pointer-events: none; z-index: 6;
     opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease;
   }
@@ -145,14 +145,16 @@
   #storyBtn.hidden { display: none; }
   body.idle #storyBtn { pointer-events: none; }
 
-  .people { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .people { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
   .person {
     border: 1.5px solid transparent; border-radius: 14px; padding: 10px 4px 10px; cursor: pointer;
     background: rgba(255,255,255,0.06); color: rgba(244,236,228,0.35); font-family: inherit;
     display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all .2s;
   }
-  .person svg { width: 58px; height: 58px; display: block; }
-  .person span { font-size: 13px; font-weight: 600; color: var(--secondary); }
+  .person svg { width: 44px; height: 44px; display: block; }
+  .person span { font-size: 11px; font-weight: 600; color: var(--secondary); }
+  .person.locked { opacity: .35; cursor: default; }
+  .person.locked svg { filter: blur(2px); }
   .person.on { border-color: rgba(255,170,90,0.7); background: rgba(255,140,60,0.12); color: #FFB27A; }
   .person.on span { color: var(--ink); }
   .primary-btn {
@@ -170,7 +172,7 @@
     background: rgba(30,24,22,0.85); color: var(--ink);
     padding: 10px 16px; border-radius: 12px; font-size: 13px;
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    transition: opacity .3s, transform .3s; pointer-events: none; z-index: 30; white-space: nowrap;
+    transition: opacity .3s, transform .3s; pointer-events: none; z-index: 30; white-space: normal; max-width: 86vw; width: max-content; text-align: center; line-height: 1.55;
   }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
@@ -185,9 +187,10 @@
     transform: translateY(105%); transition: transform .38s cubic-bezier(.32,.72,0,1);
   }
   .sheet.show { transform: translateY(0); }
+  .sheet { max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .grabber { width: 36px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.2); margin: 0 auto 14px; }
   .sheet-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 18px; }
-  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
   .stat { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 6px; text-align: center; }
   .stat .v { font-size: 18px; font-weight: 700; color: var(--ember); line-height: 1.3; }
   .stat .l { font-size: 11px; color: var(--secondary); margin-top: 2px; }
@@ -214,6 +217,61 @@
     transform: translateY(140%); transition: transform 0.35s cubic-bezier(.32,.72,0,1);
   }
   #updateBanner.show { transform: translateY(0); }
+
+  /* v1.3.0 */
+  #woodRow { display: flex; gap: 6px; pointer-events: auto; }
+  #woodRow button { min-width: 44px; height: 30px; padding: 0 10px; border-radius: 15px; border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: var(--secondary); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  #woodRow button.on { color: #FFC27A; background: rgba(255,170,90,0.16); border-color: rgba(255,170,90,0.4); }
+  body.idle #woodRow button, body.idle #sobaBtn { pointer-events: none; }
+  #sobaBtn { pointer-events: auto; width: 54px; height: 54px; border-radius: 27px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,194,122,0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: transform .12s; }
+  #sobaBtn:active { transform: scale(0.94); }
+  #scenes { position: absolute; left: 0; right: 0; top: calc(34% + 46px); display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 0 16px; z-index: 5; transition: opacity .6s; }
+  #scenes.hide { opacity: 0; pointer-events: none; }
+  #scenes button, .scene-row button { height: 36px; padding: 0 14px; border-radius: 18px; border: 0.5px solid rgba(255,194,122,0.25); background: rgba(255,255,255,0.06); color: var(--ink); font-family: inherit; font-size: 13px; cursor: pointer; }
+  .scene-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  #countNum { position: absolute; left: 0; right: 0; top: 22%; text-align: center; font-size: 22px; letter-spacing: .3em; color: rgba(255,214,160,0); pointer-events: none; z-index: 6; transition: color 2s; }
+  #countNum.show { color: rgba(255,214,160,.55); }
+  #countNum.pulse { animation: cpulse 1.6s ease; }
+  @keyframes cpulse { 0% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  #replyRow { position: absolute; left: 0; right: 0; bottom: calc(var(--safe-bottom) + 152px); display: flex; justify-content: center; gap: 8px; z-index: 7; opacity: 0; pointer-events: none; transition: opacity .5s; }
+  #replyRow.show { opacity: 1; pointer-events: auto; }
+  #replyRow button { height: 38px; padding: 0 16px; border-radius: 19px; border: 0.5px solid rgba(255,194,122,0.35); background: rgba(30,22,18,0.78); color: var(--ink); font-family: inherit; font-size: 14px; cursor: pointer; }
+  body.bgm .top, body.bgm .bottom, body.bgm #caption, body.bgm #countNum, body.bgm #replyRow, body.bgm #scenes, body.bgm #hint { opacity: 0 !important; pointer-events: none !important; }
+  #bgmExit { position: absolute; left: 50%; bottom: calc(var(--safe-bottom) + 40px); transform: translateX(-50%); z-index: 9; height: 40px; padding: 0 18px; border-radius: 20px; border: 0; background: rgba(40,30,26,0.85); color: var(--ink); font-family: inherit; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  #bgmExit.show { opacity: 1; pointer-events: auto; }
+  .sec { font-size: 13px; color: var(--secondary); margin: 20px 4px 8px; letter-spacing: .08em; }
+  .diary { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 2px 12px; max-height: 230px; overflow-y: auto; }
+  .drow { display: flex; gap: 10px; padding: 9px 0; font-size: 13px; line-height: 1.6; }
+  .drow + .drow { border-top: 0.5px solid var(--sep); }
+  .drow b { color: var(--ember); min-width: 40px; font-weight: 600; }
+  .drow span { color: var(--ink); opacity: .85; }
+  .empty { font-size: 12px; color: var(--tertiary); padding: 12px 0; text-align: center; }
+  .shelf { display: flex; flex-wrap: wrap; gap: 6px; }
+  .book { width: 36px; height: 116px; padding: 8px 0; border-radius: 6px; border: 0; background: linear-gradient(90deg, #6a442c, #4a2f1e); color: #f4e4cc; font-family: inherit; font-size: 13px; cursor: pointer; writing-mode: vertical-rl; letter-spacing: .12em; }
+  .book.unk { background: rgba(255,255,255,0.05); color: var(--tertiary); cursor: default; }
+  .items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .it { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 2px; text-align: center; }
+  .it span { font-size: 22px; display: block; line-height: 1.3; }
+  .it small { font-size: 10px; color: var(--secondary); }
+  .it.unk { opacity: .45; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .cards img { width: 100%; border-radius: 6px; display: block; cursor: pointer; }
+  .cards .empty { grid-column: 1 / -1; }
+  #cardView { position: absolute; inset: 0; z-index: 40; background: rgba(0,0,0,.88); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+  #cardView.show { display: flex; }
+  #cardView img { max-width: 100%; max-height: 72vh; border-radius: 8px; }
+  #cardView .cv-btns { display: flex; gap: 10px; }
+  #cardView button { height: 44px; padding: 0 18px; border-radius: 22px; border: 0; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #cardShare { background: #FF8A3D; color: #2a1306; }
+  #cardClose { background: rgba(255,255,255,.12); color: var(--ink); }
+  .acts3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .acts2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .acts2 button, .acts3 button { min-height: 48px; padding: 6px 4px; border-radius: 14px; border: 0; background: rgba(255,255,255,0.07); color: var(--ink); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; line-height: 1.35; }
+  .soba { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sb { border: 0; border-radius: 14px; background: rgba(255,255,255,0.07); color: var(--ink); font-family: inherit; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+  .sb .se { font-size: 28px; line-height: 1.2; }
+  .sb b { font-size: 13px; }
+  .sb small { font-size: 11px; color: var(--secondary); }
   #updateBanner svg { display: block; flex-shrink: 0; }
 </style>
 </head>
@@ -243,15 +301,21 @@
   <div id="caption"><div class="who"></div><div class="line"></div></div>
 
   <div id="hint">タップして火をつける</div>
+  <div id="scenes"><button data-scene="bath">🛁 お風呂あがり</button><button data-scene="bed">🌙 ねる前</button><button data-scene="work">💻 作業のおとも</button></div>
+  <div id="countNum"></div>
+  <div id="replyRow"><button data-r="hee">へえ</button><button data-r="sorede">それで？</button><button data-r="wakaru">わかる</button></div>
+  <button id="bgmExit">BGMモードを おわる</button>
 
   <div class="bottom hide" id="bottom">
     <div id="status"></div>
+    <div id="woodRow"></div>
     <div class="btn-row">
     <button id="logBtn">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-12 12 12)"/><ellipse cx="19.3" cy="10.2" rx="1.2" ry="2.6" transform="rotate(-12 19.3 10.2)"/></svg>
       <span id="logLabel">薪をくべる</span>
     </button>
     <button id="storyBtn" class="hidden" aria-label="昔話"></button>
+    <button id="sobaBtn" aria-label="火のそばで">🍠</button>
     </div>
   </div>
 
@@ -266,7 +330,17 @@
       <div class="stat"><div class="v" id="stLogs">0本</div><div class="l">くべた薪</div></div>
       <div class="stat"><div class="v" id="stFires">0回</div><div class="l">火をつけた</div></div>
       <div class="stat"><div class="v" id="stStories">0話</div><div class="l">聞いた昔話</div></div>
+      <div class="stat"><div class="v" id="stTreats">0こ</div><div class="l">焼いたもの</div></div>
+      <div class="stat"><div class="v" id="stTea">0杯</div><div class="l">いれたお茶</div></div>
     </div>
+    <div class="sec">場面で はじめる</div>
+    <div class="scene-row"><button data-scene="bath">🛁 お風呂あがり</button><button data-scene="bed">🌙 ねる前</button><button data-scene="work">💻 作業のおとも</button></div>
+    <div class="sec">今夜の一枚</div><div class="cards" id="cardList"></div>
+    <div class="sec">焚き火日記</div><div class="diary" id="diaryList"></div>
+    <div class="sec">昔話の本棚</div><div class="shelf" id="shelf"></div>
+    <div class="sec">ひろったもの</div><div class="items" id="itemList"></div>
+    <div class="sec">火の色図鑑</div><div class="items" id="colorList"></div>
+    <div class="sec">設定</div>
     <div class="group">
       <div class="row">
         <div><div>音</div><div class="sub">ぱちぱち・ごうごう</div></div>
@@ -284,6 +358,10 @@
         <div><div>夜はおだやかに</div><div class="sub">20時〜5時は火も音もゆっくり</div></div>
         <label class="switch"><input type="checkbox" id="optNight"><span></span></label>
       </div>
+      <div class="row">
+        <div><div>BGMモード</div><div class="sub">ボタンを ぜんぶ消して、火と音だけ</div></div>
+        <label class="switch"><input type="checkbox" id="optBgm"><span></span></label>
+      </div>
     </div>
     <div id="versionLabel"></div>
   </div>
@@ -298,8 +376,13 @@
         <div><div>声で読む</div><div class="sub">字幕はいつも出ます</div></div>
         <label class="switch"><input type="checkbox" id="optVoice"><span></span></label>
       </div>
+      <div class="row">
+        <div><div>ゆっくり・小さな声で</div><div class="sub">ねむる前に</div></div>
+        <label class="switch"><input type="checkbox" id="optSlow"><span></span></label>
+      </div>
     </div>
     <button class="primary-btn" id="storyStart">昔話をきく</button>
+    <div class="acts3"><button id="memStart">思い出話</button><button id="serialStart">つづきもの</button><button id="tuneStart">一曲たのむ</button></div>
   </div>
 
   <div class="sheet" id="sleepSheet">
@@ -311,8 +394,18 @@
       <button class="choice" data-min="30">30<small>分</small></button>
       <button class="choice" data-min="60">60<small>分</small></button>
     </div>
+    <div class="acts2"><button id="breathStart">🍃 ねむりの呼吸</button><button id="countStart">✨ 火の粉を かぞえる</button></div>
+    <button class="stop-btn" id="douseBtn" style="color:#9fd0ff">💧 火を消して おやすみ</button>
     <button class="stop-btn" id="sleepStop">タイマーをやめる</button>
   </div>
+
+  <div class="sheet" id="sobaSheet">
+    <div class="grabber"></div>
+    <div class="sheet-title">火のそばで</div>
+    <div class="sheet-desc" id="sobaDesc">焼けるまで、のんびり まとう。</div>
+    <div class="soba" id="sobaList"></div>
+  </div>
+  <div id="cardView"><img alt=""><div class="cv-btns"><button id="cardShare">保存・共有</button><button id="cardClose">とじる</button></div></div>
 </div>
 
 <script>
@@ -321,12 +414,12 @@
 
   // ---------- バージョン ----------
   // リリースのたびに sw.js の CACHE 名とセットで上げる
-  const APP_VERSION = '1.2.1';
+  const APP_VERSION = '1.3.0';
 
   // ---------- IndexedDB（記録だけ保存） ----------
   // DB名・キーは一度決めたら変えない（データ互換のため）
   const DB_NAME = 'takibi-db';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   let _db = null;
   function openDB() {
     return new Promise((resolve, reject) => {
@@ -334,6 +427,7 @@
       req.onupgradeneeded = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains('stats')) db.createObjectStore('stats', { keyPath: 'id' });
+        if (!db.objectStoreNames.contains('cards')) db.createObjectStore('cards', { keyPath: 'id' });
       };
       req.onsuccess = () => { _db = req.result; resolve(_db); };
       req.onerror = () => reject(req.error);
@@ -369,7 +463,7 @@
 
   // ---------- 設定（localStorage） ----------
   const PREF_KEY = 'takibi.prefs';
-  const prefs = { sound: true, wake: true, mushi: true, night: true, voice: true, people: ['jii'] };
+  const prefs = { sound: true, wake: true, mushi: true, night: true, voice: true, people: ['jii'], wood: 'sugi', slowVoice: false };
   try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) {}
   function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} }
 
@@ -491,12 +585,12 @@
   const paths = {};
   for (const k in PEOPLE) { try { paths[k] = new Path2D(PEOPLE[k].d); } catch (e) {} }
 
-  function drawPeople(heat, fl) {
-    for (const k of PEOPLE_ORDER) {
-      if (!prefs.people.includes(k) || !paths[k]) continue;
+  function drawPeople(heat, fl, front) {
+    for (const k of peopleOrder(front)) {
+      if (!paths[k]) continue;
       const p = PEOPLE[k], s = p.seat;
       const hgt = fw * s.h, sc = hgt / 200;
-      const speaking = story.on && story.who === k;
+      const speaking = (story.on && story.who === k) || (tune && tune.who === k);
       const x = cx + s.x * fw - hgt / 2;
       const y = by + s.y * fw - hgt + (speaking ? Math.sin(t * 6) * 0.8 : 0);
       ctx.save();
@@ -557,21 +651,25 @@
     // 空
     ctx.globalCompositeOperation = 'source-over';
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#04050b'); sky.addColorStop(0.55, '#0d0b17'); sky.addColorStop(0.62, '#0a0709'); sky.addColorStop(1, '#050304');
+    const SK = getSky(), dayL = Math.max(0, Math.min(1, (lum(SK.top) - 12) / 70));
+    starVis = 1 - Math.min(1, dayL * 1.6);
+    sky.addColorStop(0, `rgb(${SK.top})`); sky.addColorStop(0.55, `rgb(${SK.mid})`); sky.addColorStop(0.62, '#0a0709'); sky.addColorStop(1, '#050304');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
 
     // 星（火が強いと少し見えにくくなる）
     for (const s of stars) {
-      const a = s.a * (0.6 + 0.4 * Math.sin(t * s.f + s.s)) * (1 - 0.45 * I);
+      const a = s.a * (0.6 + 0.4 * Math.sin(t * s.f + s.s)) * (1 - 0.45 * I) * starVis;
       ctx.fillStyle = `rgba(220,225,255,${a})`;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
     }
 
     // 夜は月と流れ星
-    if (nightK > 0.01) {
-      ctx.globalAlpha = nightK * 0.9;
-      ctx.drawImage(moon, W * 0.72 - 60, H * 0.18 - 60);
+    if (starVis > 0.05) {
+      ctx.globalAlpha = starVis * 0.95;
+      ctx.drawImage(moonImg, W * 0.72 - 60, H * 0.18 - 60);
       ctx.globalAlpha = 1;
+    }
+    if (nightK > 0.01) {
       if (Math.random() < nightK * dt / 70) {
         meteors.push({ x: W * (0.1 + Math.random() * 0.6), y: H * (0.04 + Math.random() * 0.2), life: 0, max: 0.9 + Math.random() * 0.5, a: 0.35 + Math.random() * 0.25 });
       }
@@ -587,10 +685,11 @@
       ctx.beginPath(); ctx.moveTo(hx - 60, hy - 26); ctx.lineTo(hx, hy); ctx.stroke();
     }
 
+    drawRain(dt);
     // 地面
     const horizon = by - fw * 0.45;
     const gnd = ctx.createLinearGradient(0, horizon, 0, H);
-    gnd.addColorStop(0, '#0d0a0b'); gnd.addColorStop(1, '#040303');
+    gnd.addColorStop(0, dayL > 0.05 ? `rgb(${13 + 22 * dayL | 0},${10 + 18 * dayL | 0},${11 + 12 * dayL | 0})` : '#0d0a0b'); gnd.addColorStop(1, '#040303');
     ctx.fillStyle = gnd; ctx.fillRect(0, horizon, W, H - horizon);
 
     // まわりの明るさ
@@ -640,7 +739,7 @@
 
     // 炎
     ctx.globalCompositeOperation = 'lighter';
-    const wind = (Math.sin(t * 0.7) * 10 + Math.sin(t * 1.9) * 5) * (1 - 0.4 * nightK);
+    const wind = (Math.sin(t * 0.7) * 10 + Math.sin(t * 1.9) * 5) * (1 - 0.4 * nightK) + gust.k * (55 + 25 * Math.sin(t * 1.3));
     for (let i = flames.length - 1; i >= 0; i--) {
       const p = flames[i];
       p.life += dt;
@@ -655,6 +754,7 @@
       ctx.drawImage(sprites[ci], p.x - size, p.y - size * 1.6, size * 2, size * 3.2);
     }
     ctx.globalAlpha = 1;
+    drawColorFlame(I);
 
     // 火の粉
     for (let i = sparks.length - 1; i >= 0; i--) {
@@ -676,6 +776,15 @@
     // 手前の石
     ctx.globalCompositeOperation = 'source-over';
     for (const s of stones) if (s.front) drawStone(s, heat, fl);
+    drawPeople(heat, fl, true);
+    drawPile(heat, fl);
+    drawVisitor(heat, fl);
+    drawTreat();
+    drawDrop();
+    drawSteam(dt);
+    drawAmbient();
+    drawPoker();
+    drawHands(heat);
 
     // 夜は少し暖色に、おやすみ中はだんだん暗く
     if (nightK > 0.01) { ctx.fillStyle = `rgba(40,14,0,${0.12 * nightK})`; ctx.fillRect(0, 0, W, H); }
@@ -885,27 +994,29 @@
     F.fuel = LOG_MIN;
     F.ember = 1;
     F.ignite = 0;
-    F.flare = 0.3;
-    stats.fires++; stats.logs++; statsDirty = true; saveStats();
+    F.flare = 0.3; F.wood = prefs.wood;
+    stats.fires++; stats.logs++; statsDirty = true; saveStats(); diaryAdd('logs');
     $('#hint').classList.add('hide');
     $('#bottom').classList.remove('hide');
     thump();
     for (let i = 0; i < 6; i++) spawnSpark(0.7);
-    updateUI(); updateWakeLock();
+    updateUI(); updateWakeLock(); saveFire();
   }
   function addLog() {
     initAudio();
     if (isOut() || !F.started) return igniteFire();
     wakeFromSleep();
-    if (F.fuel + LOG_MIN > MAX_FUEL + 0.01) { toast('いまは十分に燃えています'); return; }
-    F.fuel = Math.max(F.fuel, 0) + LOG_MIN;
+    const w = woodSel();
+    if (F.fuel + w.min > MAX_FUEL + 0.01) { toast('いまは十分に燃えています'); return; }
+    F.fuel = Math.max(F.fuel, 0) + w.min; F.wood = prefs.wood;
     F.ember = 1;
-    F.flare = 1;
+    F.flare = prefs.wood === 'matsu' ? 1.4 : 1;
     if (F.ignite < 1) F.ignite = Math.max(F.ignite, 0.4);
-    stats.logs++; statsDirty = true; saveStats();
+    stats.logs++; statsDirty = true; saveStats(); diaryAdd('logs');
+    if (gust.k > 0.2) { gust.k *= 0.25; toast('薪を たしたら、火が 落ちついた'); }
     thump();
-    for (let i = 0; i < 22; i++) spawnSpark(1.2);
-    updateUI(); updateWakeLock();
+    for (let i = 0; i < 22 * w.spark; i++) spawnSpark(1.2);
+    updateUI(); updateWakeLock(); saveFire();
   }
   function poke() {
     initAudio();
@@ -1025,7 +1136,7 @@
     ] },
   ];
 
-  const story = { on: false, who: null, lines: [], idx: 0, timer: null, sid: null };
+  const story = { on: false, who: null, lines: [], idx: 0, timer: null, sid: null, kind: null, meta: null };
   const HEARD_KEY = 'takibi.heard';
   function pickStory() {
     let heard = [];
@@ -1069,7 +1180,7 @@
   // 声の大きさは「火の音」とは別。声で読む＋おやすみタイマーだけで決まる
   function voiceLevel() {
     if (!prefs.voice || S.done) return 0;
-    return 1 - 0.9 * ease(S.k);
+    return (1 - 0.9 * ease(S.k)) * (prefs.slowVoice ? 0.6 : 1);
   }
 
   function speakLine(text, who, done) {
@@ -1079,14 +1190,14 @@
     const readMs = 1800 + text.length * 170;
     const vol = voiceLevel();
     if (vol <= 0.02 || !('speechSynthesis' in window)) {
-      var guard = setTimeout(fin, readMs * (1 + 0.5 * ease(S.k)));
+      var guard = setTimeout(fin, readMs * (1 + 0.5 * ease(S.k)) * (prefs.slowVoice ? 1.3 : 1));
       return;
     }
     const u = new SpeechSynthesisUtterance(text.replace(/[「」『』]/g, ''));
     u.lang = 'ja-JP';
     const v = voiceFor(who); if (v) u.voice = v;
     const p = PEOPLE[who];
-    u.pitch = p.pitch; u.rate = p.rate * (1 - 0.15 * ease(S.k)); u.volume = Math.min(1, 0.95 * vol);
+    u.pitch = p.pitch; u.rate = p.rate * (1 - 0.15 * ease(S.k)) * (prefs.slowVoice ? 0.8 : 1); u.volume = Math.min(1, 0.95 * vol);
     let started = false;
     u.onstart = () => { started = true; };
     u.onend = fin; u.onerror = fin;
@@ -1112,16 +1223,19 @@
   }
   function hideCaption() { $('#caption').classList.remove('show'); }
 
-  function startStory() {
-    const present = PEOPLE_ORDER.filter((k) => prefs.people.includes(k));
+  function startStory(sid) {
+    const present = presentTellers();
     if (!present.length) { toast('火のまわりに、だれも座っていません'); return; }
     initAudio();
     if (!F.started || isOut()) igniteFire();
-    stopStory(true);
+    stopStory(true); hideReplies(); B.on = false;
     const who = present[Math.random() * present.length | 0];
-    const s = pickStory();
-    story.on = true; story.who = who; story.sid = s.id; story.idx = 0;
-    story.lines = [PEOPLE[who].open(s.title), ...s.lines, PEOPLE[who].close];
+    const s = (typeof sid === 'string' && STORIES.find((x) => x.id === sid)) || pickStory();
+    tell(who, [PEOPLE[who].open(s.title), ...s.lines, PEOPLE[who].close], { kind: 'story', sid: s.id, title: s.title });
+  }
+  function tell(who, lines, meta) {
+    story.on = true; story.who = who; story.sid = meta.sid || null; story.idx = 0; story.kind = meta.kind; story.meta = meta;
+    story.lines = lines;
     closeSheet(); renderStoryBtn();
     nextLine();
   }
@@ -1133,21 +1247,28 @@
     showCaption(who, text);
     speakLine(text, who, () => {
       if (!story.on) return;
-      story.timer = setTimeout(nextLine, 900 + 1200 * ease(S.k) + (story.idx === 1 ? 600 : 0));
+      story.timer = setTimeout(nextLine, 900 + 1200 * ease(S.k) + (story.idx === 1 ? 600 : 0) + (prefs.slowVoice ? 1400 : 0));
     });
   }
   function endStory() {
+    const kind = story.kind, meta = story.meta || {}, who = story.who;
     story.on = false; story.who = null;
-    stats.stories = (stats.stories || 0) + 1; statsDirty = true; saveStats();
+    if (kind === 'story') {
+      stats.stories = (stats.stories || 0) + 1; statsDirty = true; saveStats();
+      if (meta.sid && !ex.heard.includes(meta.sid)) ex.heard.push(meta.sid);
+      diaryAdd('stories', meta.title); saveEx();
+    }
+    if (kind === 'serial') { ex.serial = (ex.serial || 0) + 1; diaryAdd('talks', meta.title); saveEx(); }
+    if (kind === 'memory') { diaryAdd('talks', PEOPLE[who].name + 'の思い出話'); saveEx(); renderStoryBtn(); showReplies(who, meta); return; }
     story.timer = setTimeout(hideCaption, 2500);
     renderStoryBtn();
     // おやすみタイマー中は、少し間をおいて次の話へ
-    if (S.active) story.timer = setTimeout(() => { hideCaption(); if (S.active) story.timer = setTimeout(startStory, 4000); }, 2500);
+    if (S.active && kind === 'story') story.timer = setTimeout(() => { hideCaption(); if (S.active) story.timer = setTimeout(startStory, 4000); }, 2500);
   }
   function stopStory(silent) {
     clearTimeout(story.timer);
     const was = story.on;
-    story.on = false; story.who = null;
+    story.on = false; story.who = null; story.kind = null;
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
     if (!silent || was) hideCaption();
     renderStoryBtn();
@@ -1155,20 +1276,25 @@
 
   function renderStoryBtn() {
     const b = $('#storyBtn');
-    b.classList.toggle('hidden', !prefs.people.length);
+    b.classList.toggle('hidden', !presentTellers().length);
     b.innerHTML = story.on
       ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>'
       : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5c3-1.3 6.5-1.3 10 1 3.5-2.3 7-2.3 10-1V19c-3-1.3-6.5-1.3-10 1-3.5-2.3-7-2.3-10-1z"/><path d="M12 6.5V20"/></svg>';
     b.setAttribute('aria-label', story.on ? '昔話をやめる' : '昔話をきく');
-    const sb = $('#storyStart'); if (sb) sb.disabled = !prefs.people.length;
+    const sb = $('#storyStart'); if (sb) sb.disabled = !presentTellers().length;
   }
   function renderPeopleList() {
-    $('#peopleList').innerHTML = ['jii', 'baa', 'tabi'].map((k) =>
-      `<button class="person${prefs.people.includes(k) ? ' on' : ''}" data-k="${k}">
-        <svg viewBox="0 0 200 200"${k === 'baa' ? ' style="transform:scaleX(-1)"' : ''}><path fill="currentColor" d="${PEOPLE[k].d}"/></svg>
-        <span>${PEOPLE[k].name}</span></button>`).join('');
-    $('#peopleList').querySelectorAll('.person').forEach((b) => b.addEventListener('click', () => {
-      const k = b.dataset.k;
+    $('#peopleList').innerHTML = ALL_PEOPLE.map((k) => {
+      const p = PEOPLE[k];
+      if (!isUnlocked(k)) return `<button class="person locked" disabled><svg viewBox="0 0 200 200"><path fill="currentColor" d="${p.d}"/></svg><span>あと${p.unlock - daysCount()}日</span></button>`;
+      return `<button class="person${prefs.people.includes(k) ? ' on' : ''}" data-k="${k}">
+        <svg viewBox="0 0 200 200"${p.seat.x > 0.3 ? ' style="transform:scaleX(-1)"' : ''}><path fill="currentColor" d="${p.d}"/></svg>
+        <span>${p.name}</span></button>`;
+    }).join('');
+    $('#optSlow').checked = !!prefs.slowVoice;
+    $('#serialStart').textContent = `つづき 第${(ex.serial || 0) % SERIAL.length + 1}夜`;
+    $('#peopleList').querySelectorAll('.person[data-k]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.k; sess.guest = null;
       if (prefs.people.includes(k)) {
         prefs.people = prefs.people.filter((x) => x !== k);
         if (story.who === k) stopStory();
@@ -1229,7 +1355,7 @@
     $('#sleepBtn').classList.toggle('on', S.active);
     $('#sleepStop').style.display = S.active ? '' : 'none';
   }
-  $('#sleepBtn').addEventListener('click', () => { renderSleepBtn(); openSheetEl('#sleepSheet'); });
+  $('#sleepBtn').addEventListener('click', () => { renderSleepBtn(); renderCountBtn(); openSheetEl('#sleepSheet'); });
   document.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', () => startSleep(+b.dataset.min)));
   $('#sleepStop').addEventListener('click', stopSleep);
 
@@ -1243,7 +1369,23 @@
     document.body.classList.toggle('idle', !!idle && !sheetOpen);
   }
 
-  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); poke(); });
+  cv.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (bgm.on) { showBgmExit(); return; }
+    if (hitTest(e.clientX, e.clientY)) return;
+    const pr = { x: e.clientX, y: e.clientY, held: false };
+    pr.timer = setTimeout(() => {
+      pr.held = true;
+      if (F.started && !isOut()) { hands.on = true; if (!hands.told) { hands.told = true; toast('あったかい…'); } }
+    }, 450);
+    press = pr;
+  });
+  cv.addEventListener('pointerup', () => {
+    if (!press) return; clearTimeout(press.timer);
+    if (!press.held) { poke(); if (F.started && !isOut()) pokeAt(press.x); }
+    hands.on = false; press = null;
+  });
+  cv.addEventListener('pointercancel', () => { if (press) clearTimeout(press.timer); hands.on = false; press = null; });
   $('#logBtn').addEventListener('click', addLog);
   $('#soundBtn').addEventListener('click', () => { initAudio(); prefs.sound = !prefs.sound; savePrefs(); applySound(); });
   $('#menuBtn').addEventListener('click', openSheet);
@@ -1256,14 +1398,14 @@
   // シートは下にスワイプでも閉じる
   document.querySelectorAll('.sheet').forEach((sh) => {
     let y0 = null, dy = 0;
-    sh.addEventListener('pointerdown', (e) => { if (e.target.closest('.switch')) return; y0 = e.clientY; dy = 0; sh.style.transition = 'none'; });
+    sh.addEventListener('pointerdown', (e) => { if (e.target.closest('.switch') || e.clientY - sh.getBoundingClientRect().top > 64) return; y0 = e.clientY; dy = 0; sh.style.transition = 'none'; });
     sh.addEventListener('pointermove', (e) => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); sh.style.transform = `translateY(${dy}px)`; });
     const end = () => { if (y0 === null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 80) closeSheet(); y0 = null; };
     sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
   });
 
   function openSheetEl(sel) { $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
-  function openSheet() { saveStats(); renderStats(); openSheetEl('#sheet'); }
+  function openSheet() { saveStats(); renderStats(); renderRecords(); openSheetEl('#sheet'); }
   function closeSheet() { $('#scrim').classList.remove('show'); document.querySelectorAll('.sheet').forEach((s) => s.classList.remove('show')); }
 
   function fmtTime(sec) {
@@ -1294,13 +1436,14 @@
     let s;
     if (!F.started) s = '';
     else if (S.active) s = 'おやすみタイマー中';
+    else if (bgm.on) s = '';
     else if (isBurning()) s = `あと 約${Math.max(1, Math.ceil(F.fuel))}分`;
     else if (!isOut()) s = '熾火になりました';
     else s = '火が消えました';
     if (s !== lastStatusText) { $('#status').textContent = s; lastStatusText = s; }
     const label = isOut() ? '火をつける' : '薪をくべる';
     if (label !== lastLabel) { $('#logLabel').textContent = label; lastLabel = label; }
-    const full = F.fuel + LOG_MIN > MAX_FUEL + 0.01;
+    const full = F.fuel + (WOODS[prefs.wood] || { min: LOG_MIN }).min > MAX_FUEL + 0.01;
     if (full !== lastFull) { $('#logBtn').classList.toggle('full', full); lastFull = full; }
   }
 
@@ -1343,7 +1486,8 @@
     if (F.started && isBurning()) F.ignite = Math.min(1, F.ignite + dt / 6);
     F.flare *= Math.exp(-dt * 0.9);
     const sleepCalm = 1 - 0.6 * ease(S.k);
-    const breathe = 1 + (0.05 + 0.07 * ease(S.k) + 0.03 * nightK) * Math.sin(breathPh);
+    const bs = B.on ? breathState() : null;
+    const breathe = bs ? bs.f : 1 + (0.05 + 0.07 * ease(S.k) + 0.03 * nightK) * Math.sin(breathPh);
     const I = Math.min(1, (F.I * (0.35 + 0.65 * F.ignite) + F.flare * 0.15) * sleepCalm * breathe);
 
     // 粒を出す
@@ -1356,7 +1500,7 @@
     }
 
     // ぱちぱち（火の粉と連動）
-    const rate = (I > 0.01 ? (1.2 + 7 * I + 10 * F.flare) : (F.ember > 0.2 ? 0.3 * F.ember : 0)) * (1 - 0.45 * nightK) * (1 - 0.7 * ease(S.k)) * (story.on ? 0.6 : 1);
+    const rate = (I > 0.01 ? (1.2 + 7 * I + 10 * F.flare) : (F.ember > 0.2 ? 0.3 * F.ember : 0)) * (1 - 0.45 * nightK) * (1 - 0.7 * ease(S.k)) * (story.on ? 0.6 : 1) * (B.on ? 0.5 : 1) * (isBurning() ? woodNow().crackle : 1);
     if (Math.random() < rate * dt) {
       const cluster = Math.random() < 0.25 ? 2 + (Math.random() * 4 | 0) : 1;
       for (let i = 0; i < cluster; i++) setTimeout(() => crackle((0.6 + 0.6 * I) * (1 - 0.3 * nightK)), i * (20 + Math.random() * 70));
@@ -1364,6 +1508,7 @@
     }
     updateRumble(now);
     scheduleCrickets();
+    exTick(dt, realDt, now);
     updateIdle(now);
     renderSleepBtn();
 
@@ -1384,7 +1529,7 @@
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      saveStats();
+      saveStats(); saveFire(); saveEx();
       if (story.on) stopStory();
       if (ac && ac.state === 'running') ac.suspend();
     } else {
@@ -1393,7 +1538,838 @@
       updateWakeLock();
     }
   });
-  window.addEventListener('pagehide', saveStats);
+  window.addEventListener('pagehide', () => { saveStats(); saveFire(); saveEx(); });
+
+  // ======================================================================
+  // v1.3.0：開きたくなる しくみ（30こ）
+  // ======================================================================
+  const EX_KEY = 'takibi.ex';
+  const ex = { days: [], diary: {}, items: {}, colors: {}, heard: [], serial: 0, treats: {}, tea: 0, cardDate: '', seenUnlock: [] };
+  try { Object.assign(ex, JSON.parse(localStorage.getItem(EX_KEY) || '{}')); } catch (e) {}
+  try { JSON.parse(localStorage.getItem(HEARD_KEY) || '[]').forEach((id) => { if (!ex.heard.includes(id)) ex.heard.push(id); }); } catch (e) {}
+  let exDirty = false;
+  function saveEx() { exDirty = false; try { localStorage.setItem(EX_KEY, JSON.stringify(ex)); } catch (e) {} }
+  const q = (k) => (location.search.match(new RegExp('[?&]' + k + '=(\\w+)')) || [])[1];
+  // 日付（朝5時までは前の日あつかい）
+  function dayKey(d = new Date()) { const x = new Date(d.getTime() - 5 * 3600000); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; }
+  function diaryToday() {
+    const k = dayKey();
+    if (!ex.diary[k]) ex.diary[k] = { sec: 0, logs: 0, treats: [], tea: 0, stories: [], talks: [], visitors: [], colors: [], items: [] };
+    return ex.diary[k];
+  }
+  function diaryAdd(field, val) {
+    const d = diaryToday();
+    if (Array.isArray(d[field])) { if (val && !d[field].includes(val)) d[field].push(val); }
+    else d[field] = (d[field] || 0) + 1;
+    exDirty = true;
+  }
+  (function markDay() {
+    const k = dayKey();
+    if (!ex.days.includes(k)) { ex.days.push(k); if (ex.days.length > 400) ex.days = ex.days.slice(-400); }
+    const keys = Object.keys(ex.diary).sort(); while (keys.length > 120) delete ex.diary[keys.shift()];
+    saveEx();
+  })();
+
+  // ---------- 12. 火のまわりの人（来る日がふえると、人もふえる） ----------
+  Object.assign(SHAPE, {
+    cap: 'M76 60 C76 34 124 34 124 60 C116 56 84 56 76 60 Z M94 32 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 Z',
+    axe: 'M150 196 L157 196 L162 84 L155 84 Z M148 82 L174 72 L177 96 L152 94 Z',
+    beret: 'M74 52 C78 30 126 30 128 50 C118 46 86 46 74 52 Z',
+    guitar: 'M28 160 C18 148 24 128 40 130 C48 118 66 122 66 136 C78 144 74 164 58 166 C48 174 32 172 28 160 Z M62 134 L122 100 L126 106 L66 140 Z',
+    kidhair: 'M78 58 C76 32 124 32 122 58 C114 46 86 46 78 58 Z',
+    cat: 'M62 198 C52 160 58 128 78 116 L72 84 L92 102 C98 100 104 100 110 102 L130 84 L124 116 C144 128 150 160 140 198 Z M138 192 C168 190 180 164 170 150 C176 172 160 184 138 184 Z',
+  });
+  Object.assign(PEOPLE, {
+    neko: { name: 'ねこ', d: SHAPE.cat, seat: { x: 0.98, y: 0.3, h: 0.24 }, front: true, cat: true, unlock: 2 },
+    kodomo: { name: 'こども', d: SHAPE.body + SHAPE.legs + SHAPE.head + SHAPE.kidhair, pitch: 1.5, rate: 1.0, male: false,
+      seat: { x: -1.18, y: -0.14, h: 0.48 }, unlock: 3,
+      open: (t) => `ねえねえ、「${t}」って しってる？`, close: '……おしまい！' },
+    kikori: { name: 'きこり', d: SHAPE.body + SHAPE.legs + SHAPE.head + SHAPE.cap + SHAPE.axe, pitch: 0.7, rate: 0.9, male: true,
+      seat: { x: 1.2, y: -0.3, h: 0.66 }, unlock: 5,
+      open: (t) => `山で聞いた「${t}」って話をしようか。`, close: '……ま、そんなところだ。' },
+    gakushi: { name: '旅の楽士', d: SHAPE.body + SHAPE.legs + SHAPE.head + SHAPE.beret + SHAPE.guitar, pitch: 1.0, rate: 0.9, male: true,
+      seat: { x: 0.42, y: -0.42, h: 0.52 }, unlock: 7,
+      open: (t) => `うたの かわりに、「${t}」を語ろう。`, close: '……ご清聴、ありがとう。' },
+  });
+  for (const k of ['neko', 'kodomo', 'kikori', 'gakushi']) { try { paths[k] = new Path2D(PEOPLE[k].d); } catch (e) {} }
+  const ALL_PEOPLE = ['jii', 'baa', 'tabi', 'neko', 'kodomo', 'kikori', 'gakushi'];
+  const TELLERS = ALL_PEOPLE.filter((k) => !PEOPLE[k].cat);
+  const daysCount = () => +q('days') || ex.days.length;
+  const isUnlocked = (k) => daysCount() >= (PEOPLE[k].unlock || 0);
+  const sess = { guest: null };
+  const isPresent = (k) => isUnlocked(k) && (prefs.people.includes(k) || sess.guest === k);
+  const presentTellers = () => TELLERS.filter(isPresent);
+  function peopleOrder(front) {
+    return ALL_PEOPLE.filter((k) => isPresent(k) && !!PEOPLE[k].front === !!front).sort((a, b) => PEOPLE[a].seat.y - PEOPLE[b].seat.y);
+  }
+  function checkUnlocks() {
+    const nu = ALL_PEOPLE.filter((k) => PEOPLE[k].unlock && isUnlocked(k) && !ex.seenUnlock.includes(k));
+    if (!nu.length) return;
+    nu.forEach((k) => ex.seenUnlock.push(k)); saveEx();
+    setTimeout(() => toast(`${nu.map((k) => PEOPLE[k].name).join('と')}が、火のそばに 来るように なったよ`), 7500);
+  }
+  function showCaptionRaw(name, text) {
+    const c = $('#caption'), line = c.querySelector('.line');
+    c.querySelector('.who').textContent = name;
+    line.classList.add('fade');
+    setTimeout(() => { line.textContent = text; line.classList.remove('fade'); }, 350);
+    c.classList.add('show');
+  }
+  function sayBy(who, text, ms = 5000) {
+    if (who && !story.on && !B.on) { showCaption(who, text); setTimeout(() => { if (!story.on && !B.on) hideCaption(); }, ms); }
+    else toast(text);
+  }
+
+  // ---------- 1. 火の状態をのこす（閉じても つづきから） ----------
+  const FIRE_KEY = 'takibi.fire';
+  const EMBER_AWAY = 2400; // 閉じているあいだ、熾火が冷めるまで（秒）
+  let lastFireSave = 0, returnMsg = '';
+  function saveFire() {
+    lastFireSave = performance.now();
+    try { localStorage.setItem(FIRE_KEY, JSON.stringify({ fuel: F.fuel, ember: F.ember, started: F.started, wood: F.wood || 'sugi', at: Date.now() })); } catch (e) {}
+  }
+  function restoreFire() {
+    let s = null; try { s = JSON.parse(localStorage.getItem(FIRE_KEY) || 'null'); } catch (e) {}
+    if (!s || !s.started) return;
+    let sec = Math.max(0, (Date.now() - (s.at || Date.now())) / 1000);
+    let fuel = s.fuel || 0, ember = s.ember || 0;
+    if (fuel > 0) { const need = fuel * 60; if (sec <= need) { fuel -= sec / 60; sec = 0; } else { sec -= need; fuel = 0; ember = 1; } }
+    if (fuel <= 0 && sec > 0) ember = Math.max(0, ember - sec / EMBER_AWAY);
+    F.wood = s.wood || 'sugi';
+    if (fuel > 0) { F.started = true; F.fuel = fuel; F.ember = 1; F.ignite = 1; F.I = targetIntensity(); returnMsg = 'burning'; }
+    else if (ember > 0.05) { F.started = true; F.fuel = 0; F.ember = ember; returnMsg = 'ember'; }
+    else returnMsg = 'ash';
+    lastWall = Date.now();
+    if (F.started) { $('#hint').classList.add('hide'); $('#bottom').classList.remove('hide'); }
+  }
+  document.addEventListener('pointerdown', () => { if (F.started) initAudio(); }, { once: true, capture: true });
+
+  // ---------- 3. 時刻と季節 ----------
+  const SKY_KEYS = [
+    [0, [4, 5, 11], [13, 11, 23]], [4, [8, 10, 24], [22, 18, 34]], [5.5, [30, 40, 78], [120, 90, 100]], [7, [52, 78, 110], [140, 150, 160]],
+    [15.5, [52, 78, 110], [140, 150, 160]], [17, [40, 38, 80], [200, 110, 80]], [18.5, [18, 16, 40], [70, 40, 60]], [20, [4, 5, 11], [13, 11, 23]], [24, [4, 5, 11], [13, 11, 23]],
+  ];
+  function skyCols() {
+    const d = new Date(); let h = d.getHours() + d.getMinutes() / 60;
+    const fh = q('hour'); if (fh) h = +fh;
+    let i = 0; while (i < SKY_KEYS.length - 2 && SKY_KEYS[i + 1][0] <= h) i++;
+    const a = SKY_KEYS[i], b = SKY_KEYS[i + 1], k = Math.max(0, Math.min(1, (h - a[0]) / ((b[0] - a[0]) || 1)));
+    const mix = (u, v) => u.map((x, j) => Math.round(x + (v[j] - x) * k));
+    return { top: mix(a[1], b[1]), mid: mix(a[2], b[2]) };
+  }
+  let skyCache = { at: -1e9, v: null };
+  function getSky() { const n = performance.now(); if (n - skyCache.at > 30000) skyCache = { at: n, v: skyCols() }; return skyCache.v; }
+  const lum = (c) => (c[0] + c[1] + c[2]) / 3;
+  let starVis = 1;
+  function season() {
+    const s = q('season'); if (s) return s;
+    const m = new Date().getMonth() + 1;
+    return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter';
+  }
+  const amb = [];
+  function updateAmbient(dt) {
+    const se = season();
+    const rate = se === 'autumn' ? 0.45 : se === 'winter' ? 2.6 : se === 'spring' ? 0.55 : (starVis > 0.3 ? 0.35 : 0);
+    if (amb.length < 60 && Math.random() < rate * dt) {
+      if (se === 'summer') amb.push({ k: 'fly', x: Math.random() * W, y: by - fw * (0.1 + Math.random() * 0.9), life: 0, max: 8 + Math.random() * 6, s: Math.random() * 9 });
+      else amb.push({ k: se, x: Math.random() * W * 1.2 - W * 0.1, y: -10, vx: se === 'winter' ? 6 : 16, vy: se === 'winter' ? 22 + Math.random() * 18 : 28 + Math.random() * 20, life: 0, max: 40, s: Math.random() * 9, r: se === 'winter' ? 1 + Math.random() * 1.8 : 4 + Math.random() * 3, rot: Math.random() * 6 });
+    }
+    for (let i = amb.length - 1; i >= 0; i--) {
+      const a = amb[i]; a.life += dt;
+      if (a.k === 'fly') { a.x += Math.sin(t * 0.7 + a.s) * 14 * dt; a.y += Math.cos(t * 0.9 + a.s * 2) * 10 * dt; }
+      else { a.x += (a.vx + Math.sin(t * 1.3 + a.s) * 18) * dt; a.y += a.vy * dt; a.rot += dt * 1.5; }
+      if (a.life > a.max || a.y > H + 10) amb.splice(i, 1);
+    }
+  }
+  function drawAmbient() {
+    for (const a of amb) {
+      if (a.k === 'fly') {
+        const g = 0.5 + 0.5 * Math.sin(t * 2.4 + a.s), fade = Math.max(0, Math.min(1, a.life, a.max - a.life));
+        ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = '#d8ff7a';
+        ctx.globalAlpha = 0.8 * g * fade; ctx.beginPath(); ctx.arc(a.x, a.y, 1.8, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = 0.22 * g * fade; ctx.beginPath(); ctx.arc(a.x, a.y, 6, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = 1; continue;
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      if (a.k === 'winter') { ctx.fillStyle = 'rgba(235,240,255,0.75)'; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.283); ctx.fill(); }
+      else {
+        ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.rot);
+        ctx.fillStyle = a.k === 'spring' ? 'rgba(255,190,205,0.8)' : `hsla(${20 + (a.s * 4 | 0)},70%,${30 + (a.s * 2 | 0)}%,0.85)`;
+        ctx.beginPath(); ctx.ellipse(0, 0, a.r, a.r * 0.55, 0, 0, 6.283); ctx.fill(); ctx.restore();
+      }
+    }
+  }
+
+  // ---------- 4. 今夜の空（本当の月齢） ----------
+  function moonPhase() {
+    const p = q('moon'); if (p) return +p / 100;
+    const ref = Date.UTC(2000, 0, 6, 18, 14), days = (Date.now() - ref) / 86400000, L = 29.530588853;
+    return (((days % L) + L) % L) / L;
+  }
+  function moonName(p) { return ['新月', '三日月', '上弦の月', '十三夜の月', '満月', '十六夜の月', '下弦の月', '有明の月'][Math.round(p * 8) % 8]; }
+  function buildMoon() {
+    const ph = moonPhase(), lit = 0.5 - 0.5 * Math.cos(ph * 2 * Math.PI);
+    const c = document.createElement('canvas'); c.width = c.height = 120; const x = c.getContext('2d');
+    const gl = x.createRadialGradient(60, 60, 0, 60, 60, 60);
+    gl.addColorStop(0, `rgba(255,240,210,${0.05 + 0.18 * lit})`); gl.addColorStop(1, 'rgba(255,240,210,0)');
+    x.fillStyle = gl; x.fillRect(0, 0, 120, 120);
+    const R = 15, img = x.getImageData(60 - R, 60 - R, R * 2, R * 2), cs = Math.cos(ph * 2 * Math.PI);
+    for (let j = 0; j < R * 2; j++) for (let i = 0; i < R * 2; i++) {
+      const u = (i + 0.5 - R) / R, v = (j + 0.5 - R) / R, rr = u * u + v * v; if (rr > 1) continue;
+      const xt = cs * Math.sqrt(1 - v * v), on = ph < 0.5 ? u > xt : u < -xt;
+      const o = (j * R * 2 + i) * 4, edge = Math.min(1, (1 - Math.sqrt(rr)) * R);
+      if (on) { img.data[o] = 243; img.data[o + 1] = 230; img.data[o + 2] = 200; img.data[o + 3] = 255 * edge; }
+      else { img.data[o] = 38; img.data[o + 1] = 38; img.data[o + 2] = 52; img.data[o + 3] = Math.max(img.data[o + 3], 60 * edge); }
+    }
+    x.putImageData(img, 60 - R, 60 - R);
+    return c;
+  }
+  let moonImg = buildMoon();
+
+  // ---------- 5, 28. 本当の天気（気温のひとこと・雨の日は軒下） ----------
+  const wx = { temp: null, rain: q('rain') === '1' };
+  async function fetchWx() {
+    try {
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.68&longitude=139.76&current=temperature_2m,weather_code&timezone=Asia%2FTokyo');
+      const c = (await r.json()).current || {};
+      if (typeof c.temperature_2m === 'number') wx.temp = c.temperature_2m;
+      const code = c.weather_code;
+      if (q('rain') !== '1' && typeof code === 'number') wx.rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+    } catch (e) {}
+  }
+  const drops = [];
+  function drawRain(dt) {
+    if (!wx.rain) return;
+    const eaveY = H * 0.11;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(170,185,210,0.2)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i < 70; i++) { const x = ((i * 97.3 + t * 40) % (W + 40)) - 20, y = eaveY + ((i * 53.1 + t * 520) % (H * 0.55)); ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 14); }
+    ctx.stroke();
+    ctx.fillStyle = '#0b0807'; ctx.fillRect(0, 0, W, eaveY);
+    ctx.fillStyle = '#17110d'; ctx.fillRect(0, eaveY - 6, W, 6);
+    ctx.fillStyle = '#100b09'; for (let x = 6; x < W; x += 22) ctx.fillRect(x, eaveY - 6, 3, 10);
+    if (Math.random() < dt * 3) drops.push({ x: 10 + Math.random() * (W - 20), y: eaveY + 4, vy: 0 });
+    ctx.fillStyle = 'rgba(190,205,230,0.45)';
+    for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.vy += 600 * dt; d.y += d.vy * dt; if (d.y > by - fw * 0.5) { drops.splice(i, 1); continue; } ctx.fillRect(d.x, d.y, 1.5, 6); }
+  }
+  let rainGain = null;
+  function updateRainSound() {
+    if (!ac || !master || ac.state !== 'running') return;
+    if (!rainGain) {
+      const len = ac.sampleRate * 3, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const s = ac.createBufferSource(); s.buffer = b; s.loop = true;
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
+      rainGain = ac.createGain(); rainGain.gain.value = 0;
+      s.connect(hp).connect(lp).connect(rainGain).connect(master); s.start();
+    }
+    rainGain.gain.setTargetAtTime(wx.rain ? 0.045 : 0, ac.currentTime, 1);
+  }
+
+  // ---------- 2, 5. 開いたら、だれかが先にいて ひとこと ----------
+  function greetLine() {
+    if (returnMsg === 'burning') return 'おかえり。火は まだ 燃えとるよ';
+    if (returnMsg === 'ember') return 'おかえり。熾火が まだ あたたかい。薪を くべれば すぐ燃えるよ';
+    if (returnMsg === 'ash') return 'すっかり 灰に なっとるね。また 火を おこそうか';
+    const h = new Date().getHours(), pool = [];
+    if (wx.rain) pool.push('雨だねえ。軒下で あたろうか');
+    if (wx.temp !== null) {
+      if (wx.temp < 8) pool.push('今夜は 冷えるねえ。もっと 火に ちかよりな');
+      else if (wx.temp < 16) pool.push('ちょうど 火が うれしい 夜だね');
+      else if (wx.temp > 26) pool.push('あつい日でも、火を ながめるのは いいもんだ');
+    }
+    if (h >= 4 && h < 7) pool.push('はやいねえ。夜明けの火も いいもんだ');
+    else if (h >= 16 && h < 19) pool.push('日が 暮れてきたね');
+    else if (h >= 22 || h < 4) pool.push('おそくまで おつかれさま');
+    if (h >= 18 || h < 5) pool.push(`今夜は ${moonName(moonPhase())}だよ`);
+    pool.push({ spring: 'さくらの 花びらが 飛んできたね', summer: 'ほたるが 来てるよ', autumn: '落ち葉の いい においがするね', winter: '雪が ちらついてきたね' }[season()]);
+    return pool[Math.random() * pool.length | 0];
+  }
+  function greet() {
+    const ps = presentTellers();
+    let who = ps[Math.random() * ps.length | 0];
+    if (!who) {
+      const cand = TELLERS.filter(isUnlocked);
+      if (returnMsg || Math.random() < 0.6) { who = cand[Math.random() * cand.length | 0]; sess.guest = who; renderStoryBtn(); }
+    }
+    const line = greetLine();
+    if (who) { showCaption(who, line); setTimeout(() => { if (!story.on && !B.on) hideCaption(); }, 6000); }
+    else if (line) toast(line);
+  }
+
+  // ---------- 6. 薪の種類 ----------
+  const WOODS = {
+    sugi: { name: '杉', min: 7, crackle: 1.6, spark: 1.5, note: 'ぱちぱち よく はぜる（7分）' },
+    kashi: { name: '樫', min: 15, crackle: 0.55, spark: 0.6, note: 'しずかで 火もちが いい（15分）' },
+    matsu: { name: '松', min: 9, crackle: 1.1, spark: 1.2, note: 'やにの いい かおり。炎が 大きい（9分）' },
+    sakura: { name: '桜', min: 10, crackle: 0.9, spark: 0.9, note: 'ほんのり あまい かおり（10分）' },
+  };
+  if (!WOODS[prefs.wood]) prefs.wood = 'sugi';
+  const woodNow = () => WOODS[F.wood] || WOODS.sugi;
+  const woodSel = () => WOODS[prefs.wood] || WOODS.sugi;
+  function renderWood() {
+    $('#woodRow').innerHTML = Object.entries(WOODS).map(([k, w]) => `<button data-w="${k}" class="${prefs.wood === k ? 'on' : ''}">${w.name}</button>`).join('');
+  }
+  $('#woodRow').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-w]'); if (!b) return;
+    prefs.wood = b.dataset.w; savePrefs(); renderWood(); lastFull = null;
+    toast(`${woodSel().name}：${woodSel().note}`);
+  });
+
+  // ---------- 音（新しく足したもの） ----------
+  function noiseBurst(type, freq, peak, dur) {
+    if (!ac || !prefs.sound || ac.state !== 'running' || !whiteBuf) return;
+    const tt = ac.currentTime, s = ac.createBufferSource(); s.buffer = whiteBuf; s.loop = true;
+    const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(peak, tt + Math.min(0.3, dur * 0.2)); g.gain.exponentialRampToValueAtTime(0.0001, tt + dur);
+    s.connect(f).connect(g).connect(master); s.start(tt); s.stop(tt + dur + 0.05);
+  }
+  const rustle = () => noiseBurst('lowpass', 700, 0.16, 0.25);
+  const whoosh = () => noiseBurst('bandpass', 380, 0.12, 2.2);
+  const hiss = () => { noiseBurst('highpass', 2600, 0.22, 1.8); noiseBurst('lowpass', 500, 0.2, 0.5); };
+  function whistle() {
+    if (!ac || !prefs.sound || ac.state !== 'running') return;
+    for (let r = 0; r < 2; r++) {
+      const st = ac.currentTime + r * 0.9, o = ac.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(1500, st); o.frequency.linearRampToValueAtTime(1900, st + 0.5);
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, st); g.gain.linearRampToValueAtTime(0.05, st + 0.15); g.gain.linearRampToValueAtTime(0.0001, st + 0.7);
+      o.connect(g).connect(master); o.start(st); o.stop(st + 0.75);
+    }
+  }
+
+  // ---------- 7, 11. 火かき棒・手をかざす ----------
+  const pokeFx = { t: -9, x: 0, y: 0 };
+  const hands = { on: false, k: 0, told: false };
+  let press = null;
+  function pokeAt(x) {
+    pokeFx.t = t; pokeFx.x = cx + Math.max(-1, Math.min(1, (x - cx) / fw)) * fw * 0.35; pokeFx.y = by - fw * 0.05;
+    rustle();
+  }
+  function drawPoker() {
+    const k = (t - pokeFx.t) / 0.55; if (k < 0 || k > 1) return;
+    const push = Math.sin(k * Math.PI), sx = W + 20, sy = H * 0.98;
+    const tx = pokeFx.x + (1 - push) * 40, ty = pokeFx.y + (1 - push) * 30;
+    ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = '#1a1210'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(255,120,50,${0.5 * push})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(tx + (sx - tx) * 0.08, ty + (sy - ty) * 0.08); ctx.lineTo(tx, ty); ctx.stroke();
+  }
+  const HAND = new Path2D('M30 104 L30 52 C30 44 40 44 40 52 L40 30 C40 22 50 22 50 30 L50 26 C50 18 60 18 60 26 L60 32 C60 24 70 24 70 32 L70 62 C74 52 86 54 82 66 L72 92 C68 100 60 104 50 104 Z');
+  function drawHands(heat) {
+    hands.k += ((hands.on ? 1 : 0) - hands.k) * 0.12;
+    if (hands.k < 0.02) return;
+    const s = fw * 0.009;
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.translate(cx + side * fw * 0.55, H + 10 - hands.k * fw * 0.95);
+      ctx.scale(-side * s, s); ctx.translate(-55, -104);
+      ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#120c0a'; ctx.fill(HAND);
+      ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createLinearGradient(0, 20, 0, 104); g.addColorStop(0, `rgba(255,140,60,${0.4 * heat})`); g.addColorStop(1, 'rgba(255,100,40,0)');
+      ctx.fillStyle = g; ctx.fill(HAND);
+      ctx.restore();
+    }
+  }
+
+  // ---------- 8, 9. 焼きもの・やかん ----------
+  const TREATS = {
+    imo: { e: '🍠', name: '焼き芋', min: 5, done: 'ほっくほくの 焼き芋が 焼けたよ' },
+    marsh: { e: '🤍', name: 'マシュマロ', min: 0.7, done: 'マシュマロ、とろっと いい色だ' },
+    corn: { e: '🌽', name: 'とうもろこし', min: 3, done: 'とうもろこし、こうばしく 焼けたよ' },
+    onigiri: { e: '🍙', name: '焼きおにぎり', min: 2, done: '焼きおにぎり、おこげが いいね' },
+    tea: { e: '🫖', name: 'お茶', min: 2, done: 'お湯が わいた。お茶を いれたよ' },
+  };
+  let treat = null;
+  const steam = [];
+  function startTreat(k) {
+    initAudio();
+    if (!F.started || isOut()) { toast('先に 火を つけよう'); return; }
+    if (treat && !treat.done) { toast(`いま ${TREATS[treat.k].name}${treat.k === 'tea' ? 'の お湯を わかしてるよ' : 'を 焼いてるよ'}`); return; }
+    treat = { k, acc: 0, dur: TREATS[k].min * 60 * (q('fast') ? 0.05 : 1), done: false };
+    closeSheet(); toast(k === 'tea' ? 'やかんを 火に かけたよ' : `${TREATS[k].name}を 火の そばに おいたよ`);
+  }
+  function updateTreat(dt) {
+    if (!treat) return;
+    if (treat.done) { if (t - treat.doneAt > 12) treat = null; return; }
+    if (isBurning()) treat.acc += dt;
+    if (treat.k === 'tea' && treat.acc / treat.dur > 0.6 && Math.random() < dt * 4) steam.push({ x: Math.min(W - fw * 0.16, cx + fw * 0.84), y: by - fw * 0.02, vx: gauss() * 6, vy: -(20 + Math.random() * 20), life: 0, max: 1.6, r: fw * 0.04 });
+    if (treat.acc >= treat.dur) {
+      treat.done = true; treat.doneAt = t;
+      const v = TREATS[treat.k];
+      if (treat.k === 'tea') { whistle(); ex.tea = (ex.tea || 0) + 1; diaryAdd('tea'); }
+      else { ex.treats[treat.k] = (ex.treats[treat.k] || 0) + 1; diaryAdd('treats', v.name); }
+      saveEx();
+      const ps = presentTellers(); sayBy(ps[Math.random() * ps.length | 0], v.done);
+    }
+  }
+  function drawTreat() {
+    if (!treat) return;
+    const v = TREATS[treat.k], p = Math.min(1, treat.acc / treat.dur), x = Math.min(W - fw * 0.16, cx + fw * 0.84), y = by + fw * 0.1, s = fw * 0.2;
+    const fade = treat.done ? Math.max(0, 1 - (t - treat.doneAt - 9) / 3) : 1;
+    ctx.save(); ctx.globalAlpha = fade;
+    ctx.globalCompositeOperation = 'lighter';
+    const hg = ctx.createRadialGradient(x, y - s * 0.3, 0, x, y - s * 0.3, s * 0.9);
+    hg.addColorStop(0, 'rgba(255,170,90,0.28)'); hg.addColorStop(1, 'rgba(255,170,90,0)');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y - s * 0.3, s * 0.9, 0, 6.283); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    if (treat.k === 'marsh') {
+      const col = [255 - 80 * p, 250 - 130 * p, 240 - 190 * p].map((n) => n | 0);
+      ctx.strokeStyle = '#3a2618'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x + s * 1.4, y + s * 0.9); ctx.lineTo(x - s * 0.1, y - s * 0.2); ctx.stroke();
+      ctx.fillStyle = `rgb(${col})`; roundRect(x - s * 0.45, y - s * 0.6, s * 0.6, s * 0.5, s * 0.15); ctx.fill();
+    } else {
+      ctx.font = `${Math.round(s)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(v.e, x, y - s * 0.3);
+    }
+    if (!treat.done) {
+      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.beginPath(); ctx.arc(x, y + s * 0.45, s * 0.16, 0, 6.283); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,190,120,0.75)'; ctx.beginPath(); ctx.arc(x, y + s * 0.45, s * 0.16, -Math.PI / 2, -Math.PI / 2 + p * 6.283); ctx.stroke();
+    } else {
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,220,150,${0.22 * (0.5 + 0.5 * Math.sin(t * 3)) * fade})`;
+      ctx.beginPath(); ctx.arc(x, y - s * 0.3, s * 0.7, 0, 6.283); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawSteam(dt) {
+    ctx.globalCompositeOperation = 'source-over';
+    for (let i = steam.length - 1; i >= 0; i--) {
+      const s = steam[i]; s.life += dt; const k = s.life / s.max;
+      if (k >= 1) { steam.splice(i, 1); continue; }
+      s.x += s.vx * dt; s.y += s.vy * dt;
+      const R = s.r * (1 + k), g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, R);
+      g.addColorStop(0, `rgba(225,225,230,${0.2 * (1 - k)})`); g.addColorStop(1, 'rgba(225,225,230,0)');
+      ctx.fillStyle = g; ctx.fillRect(s.x - R, s.y - R, R * 2, R * 2);
+    }
+  }
+  function renderSoba() {
+    $('#sobaList').innerHTML = Object.entries(TREATS).map(([k, v]) => `<button class="sb" data-t="${k}"><span class="se">${v.e}</span><b>${v.name}</b><small>${v.min < 1 ? Math.round(v.min * 60) + '秒' : v.min + '分'}</small></button>`).join('');
+    const d = $('#sobaDesc');
+    if (treat && !treat.done) d.textContent = `いま ${TREATS[treat.k].name}：あと ${Math.max(1, Math.ceil((treat.dur - treat.acc) / 60))}分くらい`;
+    else d.textContent = '焼けるまで、のんびり まとう。';
+  }
+  $('#sobaBtn').addEventListener('click', () => { renderSoba(); openSheetEl('#sobaSheet'); });
+  $('#sobaList').addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (b) startTreat(b.dataset.t); });
+
+  // ---------- 10. 風 ----------
+  const gust = { k: 0, next: 0 };
+  function updateGust(dt) {
+    if (!gust.next) gust.next = t + (q('gust') ? 8 : 120 + Math.random() * 180);
+    if (t > gust.next && isBurning() && !S.active && !B.on) {
+      gust.k = 1; gust.next = t + 180 + Math.random() * 300; whoosh();
+      if (!story.on) toast('風が ふいてきた。薪を たすと 落ちつくよ');
+    }
+    gust.k = Math.max(0, gust.k - dt / 28);
+  }
+
+  // ---------- 13, 14. 思い出話と あいづち ----------
+  const MEM_OPEN = { jii: 'そういえば、むかしのう…', baa: 'そうそう、むかしね…', tabi: 'ひとつ、思い出したことが あるんだ。', kikori: 'ちょっと 聞いてくれるか。', kodomo: 'あのね、あのね。', gakushi: 'すこし、むかしの 話をしようか。' };
+  const MEMORIES = {
+    jii: [
+      { lines: ['わしが わかいころは、この山で 炭を 焼いておった。', '冬の朝は、炭がまの 前が いちばん あたたかくてのう。', 'ばあさんが、おにぎりを 持ってきてくれた。', 'あれは、ほんに うまかった。'], more: 'おにぎりの 中身はな、いつも 梅ぼし ひとつだけじゃった。それが よかった。' },
+      { lines: ['むかし、大雪で 三日も 村から 出られんことが あってな。', 'みんな 一軒の家に あつまって、こうして 火を かこんだ。', '話して、わらって、ねむって。', '雪がやむのが、ちょっと さみしかったのう。'], more: 'あのとき 生まれた子が、いまは 村の 村長じゃ。' },
+    ],
+    baa: [
+      { lines: ['わたしが こどもの ころはね、冬になると 祖母が 干し柿を つくってくれたの。', '軒下に ずらっと、オレンジ色の すだれ みたいでね。', '毎日 ひとつずつ、こっそり つまみ食いしたもんよ。', '祖母は ちゃんと 知ってたのよね、きっと。'], more: 'それでも なにも 言わずに、いつも ひとつ 多めに 干してくれてたの。' },
+      { lines: ['むかしね、ひと晩じゅう 縫いものを したことが あったの。', 'あしたは 娘の 遠足でね。リュックが やぶれちゃって。', 'ちくちく、ちくちく。気づいたら、鳥が 鳴いてた。', '娘はね、そのリュックを いまでも 持ってるのよ。'], more: 'ぬいめが ちょっと ゆがんでるのが いいんだって。ふふ。' },
+    ],
+    tabi: [
+      { lines: ['砂漠を 歩いたことが あるんだ。', '昼は あつくて、夜は こごえるほど さむい。', '夜、ラクダの そばで 火を たいた。', 'あんなに たくさんの 星を 見たのは、あれが はじめてだった。'], more: '星が おおすぎて、どれが どの星座か、ぜんぜん わからなかったよ。' },
+      { lines: ['ある村で、雨やどりを させてもらったことが あってね。', '見知らぬ わたしに、家のひとが みそしるを 出してくれた。', 'なんでもない、ふつうの みそしる。', 'でも、旅で いちばん おいしかった ごはんは、あれかもしれない。'], more: '具は、とうふと ねぎ。それだけ。それが よかった。' },
+    ],
+    kikori: [
+      { lines: ['森で いちばん 大きな 木を 知ってるか。', 'おれの じいさんの じいさんの ころから、ずっと 立ってる木だ。', 'その木だけは、だれも 切らない きまりなんだ。', 'ときどき、幹に さわりに 行く。あったかいんだよ、ふしぎと。'], more: '耳を あてると、水を すいあげる 音が するって じいさんは 言ってた。おれには まだ きこえない。' },
+      { lines: ['冬の朝、森で 子ぎつねに 会ったことが ある。', 'おれが 斧を おろして じっとしてたら、', 'すこしずつ ちかよってきて、', 'おれの 弁当の におい、くんくん かいでたよ。'], more: 'おにぎり ひとかけ、置いてきた。ほんとは いけないんだけどな。' },
+    ],
+    kodomo: [
+      { lines: ['ねえ きいて。きょう、ほそい 月を 見つけたんだよ。', '学校の かえりみち、空の はしっこに あったの。', 'おかあさんに 言ったら、「つめみたいね」って。', 'あしたは もっと ふとくなるかな？'], more: 'それでね、つめって いったら、つめきり したくなっちゃった。' },
+      { lines: ['ぼくね、どんぐり 百こ あつめたことが あるんだ。', 'ポケットが ぱんぱんに なって、', 'ころころ おちて、また ひろって。', 'いえで かぞえたら、九十八こ だった。'], more: '二こは どこかで ころがって、いまごろ 木に なってるかも！' },
+    ],
+    gakushi: [
+      { lines: ['はじめて 人前で うたったのは、ちいさな 駅の ホームだった。', 'だれも 立ちどまらなくてね。', 'でも さいごに、おばあさんが ひとり、拍手を してくれた。', 'あの拍手が あったから、いまも うたってる。'], more: 'その おばあさん、帰りに みかんを ひとつ くれたんだ。' },
+      { lines: ['ギターの 弦が 切れた 夜が あってね。', '町は もう 店が しまっていた。', 'しかたなく、のこった 弦だけで ひいたんだ。', 'そしたら、いつもより いい音が した気がした。'], more: 'たりないほうが、いいことも ある。そう おもった 夜だった。' },
+    ],
+  };
+  const REPLY = {
+    jii: { hee: 'ふぉっふぉ、そうなんじゃよ', wakaru: 'わかってくれるか。うれしいのう' },
+    baa: { hee: 'ふふ、そうなのよ', wakaru: 'わかってくれる？ うれしいわあ' },
+    tabi: { hee: 'そうなんだ。旅は ふしぎだよ', wakaru: 'わかってくれるか。ありがとう' },
+    kikori: { hee: 'へへ、そうなんだよ', wakaru: 'だろ？ わかるやつだな' },
+    kodomo: { hee: 'でしょー！', wakaru: 'えへへ、うれしい！' },
+    gakushi: { hee: 'そうなんだよ。ふしぎだろう', wakaru: 'わかってもらえて、うれしいな' },
+  };
+  function startMemory() {
+    const ps = presentTellers(); if (!ps.length) { toast('火のまわりに、だれも座っていません'); return; }
+    initAudio(); if (!F.started || isOut()) igniteFire();
+    stopStory(true); hideReplies();
+    const who = ps[Math.random() * ps.length | 0], list = MEMORIES[who], m = list[Math.random() * list.length | 0];
+    tell(who, [MEM_OPEN[who], ...m.lines], { kind: 'memory', more: m.more });
+  }
+  let replyTimer = null, replyCtx = null;
+  function showReplies(who, meta) {
+    replyCtx = { who, meta }; $('#replyRow').classList.add('show');
+    clearTimeout(replyTimer); replyTimer = setTimeout(() => { hideReplies(); if (!story.on) hideCaption(); }, 15000);
+  }
+  function hideReplies() { $('#replyRow').classList.remove('show'); clearTimeout(replyTimer); }
+  $('#replyRow').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-r]'); if (!b || !replyCtx) return;
+    const { who, meta } = replyCtx; hideReplies(); replyCtx = null;
+    if (b.dataset.r === 'sorede') { tell(who, [meta.more || 'それでね……まあ、そんなところさ'], { kind: 'tail' }); return; }
+    showCaption(who, REPLY[who][b.dataset.r]); setTimeout(() => { if (!story.on) hideCaption(); }, 4500);
+  });
+
+  // ---------- 15. つづきもの（たびびとの旅のはなし） ----------
+  const SERIAL = [
+    { title: '北の みなと', lines: ['旅のはじめは、北の ちいさな みなと町だった。', '朝、霧の中から、漁師の船が つぎつぎに 帰ってきた。', '港のおばさんが、焼いた 魚を ひとつ くれてね。', '「旅のひとは、あったかいものを 食べなきゃ」って。', 'その魚の味を、いまでも ときどき 思い出すんだ。'] },
+    { title: '霧の とうげ', lines: ['みなとを出て、山の とうげを こえた。', '霧が こくて、足もとの 石しか 見えなかった。', 'そのとき、すずの音が きこえてきた。', 'ついていくと、一頭の 山羊が、道を 教えてくれたんだ。', 'とうげの上で ふりかえると、山羊は もう いなかった。'] },
+    { title: '湖の ほとりの 宿', lines: ['とうげの むこうに、しずかな 湖が あった。', 'ほとりに、ちいさな 宿が 一軒だけ。', '宿のあるじは、口数の すくない おじいさんでね。', '夜、湖に 月が うつって、ふたつの月が ならんでいた。', '「ここの月は、ふたつ あるんじゃ」と、あるじは わらった。'] },
+    { title: '市場の まつり', lines: ['しばらく歩くと、にぎやかな 市場の町に ついた。', 'その日は ちょうど、年に いちどの まつりの日。', 'ちょうちんが ゆれて、太鼓が どん、どん、と鳴っていた。', '知らない子どもたちと、いっしょに おどったよ。', '旅は ひとりでも、ときどき こういう夜が ある。'] },
+    { title: '雪の 一本道', lines: ['冬になって、雪の 一本道を 歩いた。', 'どこまでも まっしろで、音が ぜんぶ 雪に すいこまれていた。', '聞こえるのは、自分の 足音だけ。', 'さく、さく、さく。', 'あんなに しずかな時間は、あとにも さきにも ない。'] },
+    { title: '灯台守の はなし', lines: ['海ぞいの 道に出ると、古い 灯台が あった。', '灯台守は、毎晩 ひとりで あかりを まもっている。', '「さびしくないですか」と きくと、', '「船の あかりが 見えると、ひとりじゃないと わかる」と 言った。', 'その夜は、灯台の 下で、すこし 長く 話しこんだ。'] },
+    { title: '星の 観測所', lines: ['山のてっぺんに、星を 見る 観測所が あった。', '若い 学者が、望遠鏡を のぞかせてくれた。', '土星の わっかが、ほんとうに 見えたんだ。', '「あの光は、何十分も まえの 光なんですよ」', 'いま 見ている光も、もう 少し むかしの もの。ふしぎだね。'] },
+    { title: 'ふるさとの 焚き火', lines: ['旅の さいごに、生まれた 村へ 帰った。', 'なにも かわっていない ようで、すこしずつ かわっていた。', 'その夜、村のみんなで 焚き火を かこんだ。', 'わたしは 旅の話を、ひとつずつ 話した。', '……そう、ちょうど いま、こうして 話しているようにね。'] },
+  ];
+  function startSerial() {
+    initAudio(); if (!F.started || isOut()) igniteFire();
+    stopStory(true); hideReplies();
+    if (!isPresent('tabi')) sess.guest = 'tabi';
+    const i = (ex.serial || 0) % SERIAL.length, ch = SERIAL[i];
+    const end = i === SERIAL.length - 1 ? '……旅の話は、ここで ひとまず おしまい。また はじめから 話そうか。' : '……つづきは、また 今度の夜に。';
+    tell('tabi', [`旅のはなしの つづきを しよう。第${i + 1}夜、「${ch.title}」。`, ...ch.lines, end], { kind: 'serial', title: `旅のはなし 第${i + 1}夜` });
+  }
+
+  // ---------- 16. ひだまりの なかまが 遊びにくる ----------
+  const visitor = { k: null, until: 0, in: 0, tried: false };
+  const VX = () => cx - fw * 0.55, VY = () => by + fw * 0.36;
+  function maybeVisitor() {
+    if (visitor.tried || !F.started || isOut() || t < (q('visit') ? 3 : 90)) return;
+    visitor.tried = true;
+    if (Math.random() > (q('visit') ? 1 : 0.3)) return;
+    visitor.k = Math.random() < 0.5 ? 'mochi' : 'kotetsu'; visitor.in = t; visitor.until = t + 180;
+    const name = visitor.k === 'mochi' ? 'もち' : 'こてつ';
+    toast(`ひだまりの ${name}が、火に あたりに来た`); diaryAdd('visitors', name); saveEx();
+  }
+  function drawVisitor(heat, fl) {
+    if (!visitor.k) return;
+    if (t > visitor.until + 3) { visitor.k = null; return; }
+    const a = Math.max(0, Math.min(1, (t - visitor.in) / 2, (visitor.until + 3 - t) / 3));
+    const x = VX(), y = VY(), r = fw * 0.12, bob = Math.sin(t * 1.4) * r * 0.04, yy = y - r * 0.8 + bob;
+    ctx.save(); ctx.globalAlpha = a; ctx.globalCompositeOperation = 'source-over';
+    if (visitor.k === 'kotetsu') {
+      ctx.fillStyle = '#d9853b';
+      for (const sgn of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + sgn * r * 0.8, yy - r * 0.45); ctx.lineTo(x + sgn * r * 0.45, yy - r * 1.15); ctx.lineTo(x + sgn * r * 0.1, yy - r * 0.6); ctx.fill(); }
+      ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.82, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = '#f6eadb'; ctx.beginPath(); ctx.ellipse(x + r * 0.1, yy + r * 0.25, r * 0.55, r * 0.4, 0, 0, 6.283); ctx.fill();
+    } else {
+      ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.82, 0, 0, 6.283); ctx.fill();
+    }
+    const blink = Math.sin(t * 0.5 + 1) > 0.985;
+    ctx.fillStyle = '#2b2420';
+    for (const dx of [-0.13, 0.37]) { ctx.beginPath(); ctx.ellipse(x + r * dx, yy - r * 0.08, r * 0.07, blink ? r * 0.015 : r * 0.09, 0, 0, 6.283); ctx.fill(); }
+    ctx.fillStyle = 'rgba(240,140,140,0.5)';
+    for (const dx of [-0.38, 0.66]) { ctx.beginPath(); ctx.ellipse(x + r * dx, yy + r * 0.12, r * 0.12, r * 0.07, 0, 0, 6.283); ctx.fill(); }
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(x + r, yy, 0, x + r, yy, r * 2);
+    g.addColorStop(0, `rgba(255,130,60,${0.35 * heat * fl})`); g.addColorStop(1, 'rgba(255,130,60,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.82, 0, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
+
+  // ---------- 17. 楽器 ----------
+  let tune = null, tuneTried = false;
+  function playTune(who) {
+    initAudio();
+    if (!ac || ac.state !== 'running' || !prefs.sound) { toast('音を オンにすると きこえるよ'); return; }
+    if (tune) return;
+    const guitar = who === 'gakushi', scale = [0, 2, 4, 7, 9, 12, 14, 16], base = guitar ? 196 : 392;
+    const notes = []; let tt = ac.currentTime + 0.3, idx = 3;
+    for (let i = 0; i < 28; i++) {
+      idx = Math.max(0, Math.min(scale.length - 1, idx + [-2, -1, -1, 0, 1, 1, 2][Math.random() * 7 | 0]));
+      const d = [0.5, 0.75, 1, 1.5][Math.random() * 4 | 0] * (guitar ? 0.8 : 1);
+      notes.push([base * Math.pow(2, scale[idx] / 12), tt, d]); tt += d;
+    }
+    notes.push([base, tt, 2]);
+    const out = ac.createGain(); out.gain.value = 0.12; out.connect(master);
+    for (const [f, st, d] of notes) {
+      const o = ac.createOscillator(); o.type = guitar ? 'triangle' : 'square'; o.frequency.value = f;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = guitar ? 1800 : 1400;
+      const g = ac.createGain();
+      if (guitar) { g.gain.setValueAtTime(0.0001, st); g.gain.exponentialRampToValueAtTime(0.9, st + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, st + d * 1.6); }
+      else {
+        const vib = ac.createOscillator(); vib.frequency.value = 5; const vg = ac.createGain(); vg.gain.value = f * 0.008;
+        vib.connect(vg).connect(o.frequency); vib.start(st); vib.stop(st + d + 0.1);
+        g.gain.setValueAtTime(0.0001, st); g.gain.linearRampToValueAtTime(0.35, st + 0.06); g.gain.setValueAtTime(0.3, st + d * 0.8); g.gain.linearRampToValueAtTime(0.0001, st + d);
+      }
+      o.connect(lp).connect(g).connect(out); o.start(st); o.stop(st + d * (guitar ? 1.7 : 1) + 0.05);
+    }
+    const len = (tt + 2 - ac.currentTime) * 1000;
+    tune = { who };
+    showCaptionRaw(PEOPLE[who].name, guitar ? '♪ （ギターを、ぽろん、ぽろんと ひいている）' : '♪ （ハーモニカを、しずかに ふいている）');
+    setTimeout(() => { tune = null; if (!story.on && !B.on) hideCaption(); }, len);
+    diaryAdd('talks', guitar ? '楽士のギター' : 'たびびとのハーモニカ'); saveEx();
+  }
+  function startTune() {
+    closeSheet(); stopStory(true); hideReplies();
+    let who = isPresent('gakushi') ? 'gakushi' : isPresent('tabi') ? 'tabi' : null;
+    if (!who) { who = isUnlocked('gakushi') ? 'gakushi' : 'tabi'; sess.guest = who; }
+    playTune(who);
+  }
+
+  // ---------- 18. ねむりの呼吸 ----------
+  const B = { on: false, st: 0, n: 8 };
+  let lastBreathWord = '';
+  function startBreath() {
+    initAudio(); if (!F.started || isOut()) igniteFire();
+    closeSheet(); stopStory(true); hideReplies();
+    B.on = true; B.st = t; lastBreathWord = '';
+    toast('火と いっしょに、ゆっくり 呼吸しよう');
+  }
+  function breathState() {
+    const cyc = 10, e = t - B.st, i = Math.floor(e / cyc);
+    if (i >= B.n) {
+      B.on = false; lastBreathWord = '';
+      showCaptionRaw('', 'そのまま、ぼんやり…'); setTimeout(() => { if (!story.on && !B.on) hideCaption(); }, 4000);
+      return null;
+    }
+    const p = e - i * cyc, inn = p < 4, k = inn ? ease(p / 4) : 1 - ease((p - 4) / 6);
+    const w = inn ? 'すって' : 'はいて', label = `${i + 1} / ${B.n}`;
+    if (w + label !== lastBreathWord) { lastBreathWord = w + label; showCaptionRaw(label, w); }
+    return { f: 0.8 + 0.45 * k };
+  }
+
+  // ---------- 19. 火の粉を かぞえる ----------
+  const C = { on: false, n: 0, next: 0 };
+  const KAZU = ['ひとつ', 'ふたつ', 'みっつ', 'よっつ', 'いつつ', 'むっつ', 'ななつ', 'やっつ', 'ここのつ', 'とお'];
+  function renderCountBtn() { $('#countStart').textContent = C.on ? '✨ かぞえるのを やめる' : '✨ 火の粉を かぞえる'; }
+  function startCount() {
+    initAudio(); if (!F.started || isOut()) igniteFire();
+    closeSheet(); C.on = !C.on; C.n = 0; C.next = t + 3;
+    const el = $('#countNum'); el.textContent = ''; el.classList.toggle('show', C.on); renderCountBtn();
+    if (C.on) toast('大きな 火の粉が あがったら、ひとつ、ふたつ…');
+  }
+  function updateCount() {
+    if (!C.on) return;
+    if (S.done || isOut()) { C.on = false; $('#countNum').classList.remove('show'); renderCountBtn(); return; }
+    if (t < C.next) return;
+    C.next = t + 5 + Math.random() * 4; C.n++;
+    sparks.push({ x: cx + gauss() * fw * 0.1, y: by - fw * 0.3, vx: gauss() * 10, vy: -90, life: 0, max: 4, seed: Math.random() * 100, size: 3.2 });
+    crackle(0.7);
+    const el = $('#countNum'); el.textContent = C.n <= 10 ? KAZU[C.n - 1] : String(C.n);
+    el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+    if (C.n >= 100) { C.on = false; el.classList.remove('show'); renderCountBtn(); }
+  }
+
+  // ---------- 21. 火を消して おやすみ（あと始末） ----------
+  function douse() {
+    closeSheet();
+    if (!F.started || isOut()) { toast('火は もう 消えているよ'); return; }
+    stopStory(true); hideReplies(); B.on = false; C.on = false; $('#countNum').classList.remove('show');
+    if (S.active) { S.active = false; S.k = 0; }
+    initAudio(); hiss();
+    for (let i = 0; i < 26; i++) steam.push({ x: cx + gauss() * fw * 0.3, y: by - fw * 0.1, vx: gauss() * 20, vy: -(30 + Math.random() * 50), life: 0, max: 2 + Math.random() * 2, r: fw * (0.06 + Math.random() * 0.08) });
+    F.fuel = 0; F.ember = 0; F.flare = 0; F.I = 0; treat = null;
+    saveFire(); saveStats();
+    const ps = presentTellers();
+    setTimeout(() => sayBy(ps[0], 'じゅっ……。おやすみ。また 火を おこそうね', 5500), 1200);
+    updateUI(); updateWakeLock();
+  }
+
+  // ---------- 22. 薪置き場（くべた薪が つみあがる） ----------
+  function drawPile(heat, fl) {
+    const n = Math.min(36, stats.logs || 0); if (!n) return;
+    const r = Math.max(3.5, fw * 0.028), x0 = r + 8, y0 = by + fw * 0.52;
+    let i = 0;
+    for (let row = 0; row < 8 && i < n; row++) for (let c = 0; c < 8 - row && i < n; c++, i++) {
+      const x = x0 + c * r * 2.05 + row * r, y = y0 - row * r * 1.8;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#3a2618'; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+      ctx.fillStyle = '#6a4a30'; ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = 'rgba(40,24,14,0.6)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(x, y, r * 0.38, 0, 6.283); ctx.stroke();
+      if (heat > 0.01) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,120,50,${0.1 * heat * fl})`; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); }
+    }
+  }
+
+  // ---------- 25. ひろいもの ----------
+  const ITEM_DEF = { donguri: ['🌰', 'どんぐり'], ochiba: ['🍂', 'おちば'], momiji: ['🍁', 'もみじ'], matsubo: ['🌲', 'まつぼっくり'], ishi: ['🪨', 'まるい石'], hane: ['🪶', 'とりの羽'], sakura: ['🌸', 'さくらの花びら'], kai: ['🐚', 'かいがら'] };
+  const ITEM_POOL = { autumn: ['donguri', 'ochiba', 'momiji', 'matsubo', 'ishi', 'hane'], winter: ['matsubo', 'ishi', 'hane', 'donguri'], spring: ['sakura', 'ishi', 'hane'], summer: ['ishi', 'hane', 'kai'] };
+  const drop = { item: null, next: 0 };
+  function updateDrop() {
+    if (!drop.next) drop.next = t + (q('drop') ? 4 : 150 + Math.random() * 240);
+    if (drop.item && t - drop.item.born > 180) drop.item = null;
+    if (!drop.item && t > drop.next && F.started && !isOut() && !S.done) {
+      const pool = ITEM_POOL[season()] || ITEM_POOL.autumn, k = pool[Math.random() * pool.length | 0];
+      const spot = Math.random() < 0.5 ? [-0.18, 0.5] : [0.22, 0.52];
+      drop.item = { k, born: t, x: cx + fw * spot[0], y: by + fw * spot[1] };
+      drop.next = t + (q('drop') ? 20 : 240 + Math.random() * 300);
+    }
+  }
+  function drawDrop() {
+    const d = drop.item; if (!d) return;
+    const a = Math.max(0, Math.min(1, (t - d.born) / 1.5, (180 - (t - d.born)) / 3));
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.28 * a * (0.5 + 0.5 * Math.sin(t * 2.5));
+    ctx.fillStyle = '#ffd9a0'; ctx.beginPath(); ctx.arc(d.x, d.y, fw * 0.1, 0, 6.283); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = a;
+    ctx.font = `${Math.round(fw * 0.13)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(ITEM_DEF[d.k][0], d.x, d.y); ctx.globalAlpha = 1;
+  }
+  function hitTest(x, y) {
+    const d = drop.item;
+    if (d && Math.hypot(x - d.x, y - d.y) < Math.max(30, fw * 0.14)) {
+      ex.items[d.k] = (ex.items[d.k] || 0) + 1; diaryAdd('items', ITEM_DEF[d.k][1]); saveEx();
+      toast(`${ITEM_DEF[d.k][0]} ${ITEM_DEF[d.k][1]}を ひろった`); drop.item = null; return true;
+    }
+    if (visitor.k && Math.hypot(x - VX(), y - (VY() - fw * 0.1)) < fw * 0.18) { toast(visitor.k === 'mochi' ? 'もち「あったかいね〜」' : 'こてつ「…ぬくい」'); return true; }
+    return false;
+  }
+
+  // ---------- 26. 火の色図鑑 ----------
+  const FCOL = [
+    { id: 'ki', name: 'きいろい火', c: [255, 220, 60], why: 'しおが ひとつまみ まざったのかも（ナトリウム）' },
+    { id: 'midori', name: 'みどりの火', c: [70, 230, 120], why: 'ふるい 銅のくぎが まざってたのかも（銅）' },
+    { id: 'murasaki', name: 'むらさきの火', c: [180, 110, 255], why: '灰の中の カリウムかも' },
+    { id: 'beni', name: 'べにいろの火', c: [255, 50, 110], why: '花火と おなじ色。ストロンチウムかも' },
+    { id: 'ao', name: 'あおい火', c: [80, 150, 255], why: '空気を たっぷり すって、よく燃えた' },
+    { id: 'aka', name: 'まっかな火', c: [255, 40, 30], why: 'リチウムかも。めずらしい' },
+  ];
+  const colorEv = { c: null, from: 0, until: 0, nextCheck: 0 };
+  function updateColorEv() {
+    if (colorEv.c && t > colorEv.until) colorEv.c = null;
+    if (t < colorEv.nextCheck) return;
+    colorEv.nextCheck = t + (q('color') ? 5 : 60);
+    if (colorEv.c || !isBurning() || F.I < 0.25) return;
+    if (Math.random() < (q('color') ? 1 : 0.07)) {
+      const c = FCOL[Math.random() * FCOL.length | 0];
+      colorEv.c = c; colorEv.from = t; colorEv.until = t + 22;
+      ex.colors[c.id] = (ex.colors[c.id] || 0) + 1; diaryAdd('colors', c.name); saveEx();
+      toast(`${c.name}！ ${c.why}`);
+    }
+  }
+  function drawColorFlame(I) {
+    if (!colorEv.c) return;
+    const k = Math.max(0, Math.min(1, (t - colorEv.from) / 2, (colorEv.until - t) / 3)); if (!k) return;
+    const [r, g, b] = colorEv.c.c, y = by - fw * (0.35 + 0.15 * I), R = fw * (0.35 + 0.25 * I) * (0.9 + 0.1 * Math.sin(t * 9));
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.save(); ctx.translate(cx, y); ctx.scale(0.7, 1.3);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    gr.addColorStop(0, `rgba(${r},${g},${b},${0.45 * k})`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill(); ctx.restore();
+  }
+
+  // ---------- 27. 場面で はじめる ----------
+  function runScene(s) {
+    initAudio(); closeSheet();
+    if (!F.started || isOut()) igniteFire();
+    if (s === 'bath') {
+      while (F.fuel + 10 <= 30) F.fuel += 10;
+      toast('お風呂あがりの 30分。のんびり あたたまろう');
+      const ps = presentTellers(); setTimeout(() => sayBy(ps[0], 'おふろ、気持ちよかったかい'), 1500);
+    }
+    if (s === 'bed') { startSleep(30); setTimeout(startBreath, 900); }
+    if (s === 'work') setBgm(true);
+  }
+  document.querySelectorAll('[data-scene]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); runScene(b.dataset.scene); }));
+
+  // ---------- 29. BGMモード ----------
+  const bgm = { on: false };
+  function setBgm(on) {
+    bgm.on = on; document.body.classList.toggle('bgm', on);
+    const o = $('#optBgm'); if (o) o.checked = on;
+    if (on) { closeSheet(); stopStory(true); hideReplies(); if (!F.started || isOut()) igniteFire(); toast('BGMモード。画面を タップすると おわれるよ'); }
+  }
+  function showBgmExit() { const b = $('#bgmExit'); b.classList.add('show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('show'), 3000); }
+  $('#bgmExit').addEventListener('click', (e) => { e.stopPropagation(); setBgm(false); $('#bgmExit').classList.remove('show'); });
+
+  // ---------- 30. 今夜の一枚 ----------
+  let burnStreak = 0, makingCard = false;
+  function dbAll(store) {
+    return new Promise((res) => {
+      if (!_db || !_db.objectStoreNames.contains(store)) return res([]);
+      const r = _db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]);
+    });
+  }
+  async function makeCard() {
+    if (makingCard || ex.cardDate === dayKey()) return;
+    makingCard = true; ex.cardDate = dayKey(); saveEx();
+    try {
+      const cw = 600, ch = 780, c = document.createElement('canvas'); c.width = cw; c.height = ch; const x = c.getContext('2d');
+      x.fillStyle = '#f3ece0'; x.fillRect(0, 0, cw, ch);
+      const pw = cw - 60, ph = 560, sw = Math.min(W, H * pw / ph), sh = sw * ph / pw;
+      const sx = Math.max(0, cx - sw / 2), sy = Math.max(0, Math.min(H - sh, by - sh * 0.62));
+      x.drawImage(cv, sx * DPR, sy * DPR, sw * DPR, sh * DPR, 30, 30, pw, ph);
+      const [, mm, dd] = ex.cardDate.split('-');
+      x.fillStyle = '#4a3a2e'; x.font = '600 30px "Noto Sans JP", sans-serif'; x.textBaseline = 'alphabetic';
+      x.fillText(`${+mm}月${+dd}日の 焚き火`, 40, 650);
+      x.font = '400 22px "Noto Sans JP", sans-serif'; x.fillStyle = '#7a6a5c';
+      const who = ALL_PEOPLE.filter(isPresent).map((k) => PEOPLE[k].name).join('・');
+      x.fillText(who ? `火のまわり：${who}` : 'ひとりで、しずかに', 40, 696);
+      x.fillText(`${moonName(moonPhase())}・${{ spring: '春', summer: '夏', autumn: '秋', winter: '冬' }[season()]}の夜`, 40, 732);
+      await dbPut('cards', { id: ex.cardDate, img: c.toDataURL('image/jpeg', 0.82), at: Date.now() });
+      toast('今夜の焚き火を 1枚 のこしました');
+    } catch (e) {}
+    makingCard = false;
+  }
+  function openCard(src) { $('#cardView img').src = src; $('#cardView').classList.add('show'); }
+  $('#cardList').addEventListener('click', (e) => { const im = e.target.closest('img'); if (im) openCard(im.src); });
+  $('#cardClose').addEventListener('click', () => $('#cardView').classList.remove('show'));
+  $('#cardShare').addEventListener('click', async () => {
+    const src = $('#cardView img').src;
+    try {
+      const blob = await (await fetch(src)).blob(), file = new File([blob], 'takibi.jpg', { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = src; a.download = 'takibi.jpg'; a.click();
+  });
+
+  // ---------- 23, 24. 記録シート（日記・本棚・ひろいもの・火の色・今夜の一枚） ----------
+  async function renderRecords() {
+    $('#stTreats').textContent = Object.values(ex.treats).reduce((a, b) => a + b, 0) + 'こ';
+    $('#stTea').textContent = (ex.tea || 0) + '杯';
+    const keys = Object.keys(ex.diary).filter((k) => ex.diary[k].sec >= 30 || ex.diary[k].logs).sort().reverse().slice(0, 14);
+    $('#diaryList').innerHTML = keys.length ? keys.map((k) => {
+      const d = ex.diary[k], [, m, dd] = k.split('-'), bits = [];
+      if (d.sec >= 60) bits.push(fmtTime(d.sec));
+      if (d.logs) bits.push(`薪${d.logs}本`);
+      d.treats.forEach((x) => bits.push(x)); if (d.tea) bits.push(`お茶${d.tea}杯`);
+      d.stories.forEach((x) => bits.push(`「${x}」`)); d.talks.forEach((x) => bits.push(x));
+      d.visitors.forEach((x) => bits.push(`${x}が来た`)); d.colors.forEach((x) => bits.push(x)); d.items.forEach((x) => bits.push(`${x}を ひろった`));
+      return `<div class="drow"><b>${+m}/${+dd}</b><span>${bits.join('・') || 'ちょっとだけ'}</span></div>`;
+    }).join('') : '<div class="empty">火をつけると、ここに 日記が のこります</div>';
+    $('#shelf').innerHTML = STORIES.map((s) => ex.heard.includes(s.id) ? `<button class="book" data-sid="${s.id}">${s.title}</button>` : '<button class="book unk" disabled>？？？</button>').join('');
+    $('#itemList').innerHTML = Object.keys(ITEM_DEF).map((k) => ex.items[k] ? `<div class="it"><span>${ITEM_DEF[k][0]}</span><small>${ITEM_DEF[k][1]} ×${ex.items[k]}</small></div>` : '<div class="it unk"><span>・</span><small>？</small></div>').join('');
+    $('#colorList').innerHTML = FCOL.map((c) => ex.colors[c.id] ? `<div class="it"><span style="color:rgb(${c.c})">●</span><small>${c.name}</small></div>` : '<div class="it unk"><span>○</span><small>？</small></div>').join('');
+    const cards = (await dbAll('cards')).sort((a, b) => b.at - a.at);
+    $('#cardList').innerHTML = cards.length ? cards.map((c) => `<img src="${c.img}" alt="">`).join('') : '<div class="empty">火を 5分 つづけて 燃やすと、その夜の 1枚が のこります</div>';
+    const o = $('#optBgm'); if (o) o.checked = bgm.on;
+  }
+  $('#shelf').addEventListener('click', (e) => { const b = e.target.closest('[data-sid]'); if (b) startStory(b.dataset.sid); });
+  $('#memStart').addEventListener('click', startMemory);
+  $('#serialStart').addEventListener('click', startSerial);
+  $('#tuneStart').addEventListener('click', startTune);
+  $('#optSlow').addEventListener('change', (e) => { prefs.slowVoice = e.target.checked; savePrefs(); });
+  $('#breathStart').addEventListener('click', startBreath);
+  $('#countStart').addEventListener('click', startCount);
+  $('#douseBtn').addEventListener('click', douse);
+  $('#optBgm').addEventListener('change', (e) => setBgm(e.target.checked));
+
+  // ---------- 毎フレームの追加ぶん ----------
+  let lastScenes = null, lastRainTick = 0;
+  function exTick(dt, realDt, now) {
+    updateAmbient(dt);
+    updateGust(dt);
+    updateTreat(dt);
+    updateCount();
+    updateDrop();
+    updateColorEv();
+    maybeVisitor();
+    if (bgm.on && F.started && F.fuel < 6) F.fuel += 10;
+    if (isBurning() && !S.done) burnStreak += realDt; else if (!isBurning()) burnStreak = 0;
+    if (burnStreak > (q('card') ? 4 : 300) && ex.cardDate !== dayKey()) makeCard();
+    if (!tuneTried && t > 300 && nightK > 0.5 && !story.on && !B.on && (isPresent('tabi') || isPresent('gakushi'))) { tuneTried = true; if (Math.random() < 0.3) playTune(isPresent('gakushi') ? 'gakushi' : 'tabi'); }
+    if (F.started && !isOut()) { diaryToday().sec += Math.min(realDt, 0.25); exDirty = true; }
+    if (now - lastFireSave > 5000) { saveFire(); if (exDirty) saveEx(); }
+    if (now - lastRainTick > 2000) { lastRainTick = now; updateRainSound(); }
+    const sc = !F.started || isOut();
+    if (sc !== lastScenes) { lastScenes = sc; $('#scenes').classList.toggle('hide', !sc); }
+  }
 
   // ---------- 起動 ----------
   (async function init() {
@@ -1402,7 +2378,13 @@
     $('#versionLabel').textContent = 'v' + APP_VERSION;
     try { await openDB(); await loadStats(); } catch (e) {}
     if (!Array.isArray(prefs.people)) prefs.people = ['jii'];
+    restoreFire();
+    renderWood();
     renderStats();
+    fetchWx(); setInterval(fetchWx, 30 * 60000);
+    setInterval(() => { moonImg = buildMoon(); skyCache.at = -1e9; }, 3600000);
+    setTimeout(greet, 1400);
+    checkUnlocks();
     renderStoryBtn();
     updateUI();
     requestAnimationFrame((n) => { lastFrame = n; frame(n); });
