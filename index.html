@@ -273,6 +273,9 @@
   .sb b { font-size: 13px; }
   .sb small { font-size: 11px; color: var(--secondary); }
   #updateBanner svg { display: block; flex-shrink: 0; }
+
+  /* キーボードが出ているときも、シートが画面の上にはみ出さないように（見えている高さに収めて中をスクロール） */
+  .sheet { max-height: calc(var(--app-height, 100vh) - var(--safe-top, env(safe-area-inset-top, 0px)) - 16px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 </style>
 </head>
 <body>
@@ -414,7 +417,7 @@
 
   // ---------- バージョン ----------
   // リリースのたびに sw.js の CACHE 名とセットで上げる
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.5.0';
 
   // ---------- IndexedDB（記録だけ保存） ----------
   // DB名・キーは一度決めたら変えない（データ互換のため）
