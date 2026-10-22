@@ -34,7 +34,7 @@
     overscroll-behavior: none; -webkit-user-select: none; user-select: none;
     -webkit-touch-callout: none;
   }
-  #app { position: fixed; inset: 0; height: var(--app-height, 100%); }
+  #app { position: fixed; left: 0; right: 0; top: var(--app-top, 0px); height: var(--app-height, 100%); }
   #fire { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
   .top {
@@ -414,7 +414,7 @@
 
   // ---------- バージョン ----------
   // リリースのたびに sw.js の CACHE 名とセットで上げる
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
 
   // ---------- IndexedDB（記録だけ保存） ----------
   // DB名・キーは一度決めたら変えない（データ互換のため）
@@ -2392,10 +2392,36 @@
 
   // ---------- visualViewport ----------
   (function setupViewportTracking() {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const apply = () => document.documentElement.style.setProperty('--app-height', vv.height + 'px');
-    vv.addEventListener('resize', apply); apply();
+    // iPhoneの定石（CLAUDE.md）：アプリ全体を「いま見えている範囲」（キーボードの上）にぴったり重ね、
+    // 下から出るシートは --kb ぶん持ち上げる。iPhoneは見える範囲を少しずつ動かすので、入力中は毎フレーム追いかける
+    const vv = window.visualViewport; if (!vv) return;
+    const root = document.documentElement; let baseH = vv.height, lastH = -1, lastT = -1, lastK = -1;
+    function apply() {
+      const h = Math.round(vv.height), t = Math.max(0, Math.round(vv.offsetTop));
+      const k = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      if (h !== lastH) { root.style.setProperty('--app-height', h + 'px'); lastH = h; }
+      if (t !== lastT) { root.style.setProperty('--app-top', t + 'px'); lastT = t; }
+      if (k !== lastK) { root.style.setProperty('--kb', k + 'px'); lastK = k; }
+      document.body.classList.toggle('keyboard-open', h < baseH - 120);
+    }
+    let until = 0, looping = false;
+    function follow(ms) {
+      until = Math.max(until, performance.now() + ms);
+      if (looping) return; looping = true;
+      const tick = () => { apply(); const a = document.activeElement; const typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); if (typing || performance.now() < until) requestAnimationFrame(tick); else looping = false; };
+      requestAnimationFrame(tick);
+    }
+    vv.addEventListener('resize', () => follow(600)); vv.addEventListener('scroll', () => follow(600));
+    document.addEventListener('focusin', (e) => {
+      follow(1200);
+      const el = e.target;
+      if (!el || !/^(INPUT|TEXTAREA)$/.test(el.tagName) || /^(date|time|month|checkbox|radio|file|range|color)$/.test(el.type)) return;
+      // キーボードが出きったあと、入力欄を見える位置へ
+      [350, 700].forEach((ms) => setTimeout(() => { if (document.activeElement === el) { try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {} } }, ms));
+    });
+    document.addEventListener('focusout', () => follow(1200));
+    window.addEventListener('orientationchange', () => setTimeout(() => { baseH = vv.height; follow(600); }, 300));
+    apply();
   })();
 
   // ---------- Service Worker + 自動アップデート ----------
